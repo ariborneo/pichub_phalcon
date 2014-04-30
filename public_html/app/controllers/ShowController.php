@@ -7,6 +7,8 @@ class ShowController extends \Phalcon\Mvc\Controller
     {
         $code = $this->dispatcher->getParam("code");
         $img = Images::findFirst("code='".$code."'");
+        ++$img->views;
+        $img->update();
         $this->view->setVar("image", array(
             "code" => $code,
             "path" => "/pic_b/".Show::getdirbydate($img->time).$code.".".$img->ext,

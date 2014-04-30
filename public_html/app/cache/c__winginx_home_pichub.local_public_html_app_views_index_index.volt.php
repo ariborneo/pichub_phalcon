@@ -1,5 +1,14 @@
-<form action="upload" method="post" enctype="multipart/form-data">
-    <input type="file" name="Filedata" id="file" size="60" accept="image/*">
+<form action="upload" method="post" enctype="multipart/form-data" style="border: #000000 1px solid;">
+    <input type="file" name="Filedata" id="file" size="60" accept="image/*"><br>
+    Альбом:
+    <select name="album">
+        <option value="0">-</option>
+        <?php foreach ($albums as $album) { ?>
+            <option value="<?php echo $album['id']; ?>"><?php echo $album['name']; ?></option>
+        <?php } ?>
+    </select><br>
+    Описание:<br>
+    <textarea name="opis"></textarea><br>
     <input type="submit" value="Загрузить" class="btn info" style="margin-top: 10px;">
 </form>
 <br>

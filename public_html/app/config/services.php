@@ -104,6 +104,35 @@ $di->set('router', function() {
             "name" => 1
         )
     );
+    $router->add(
+        "/top",
+        array(
+            "controller" => "charts",
+            "action"     => "top",
+        )
+    );
+    $router->add(
+        "/last",
+        array(
+            "controller" => "charts",
+            "action"     => "last",
+        )
+    );
+    $router->add(
+        "/create_album",
+        array(
+            "controller" => "user",
+            "action"     => "create_album",
+        )
+    );
+    $router->add(
+        "/album/([0-9]+)([/]?)",
+        array(
+            "controller" => "user",
+            "action"     => "album",
+            "id" => 1
+        )
+    );
     $router->notFound(array(
         "controller" => "index",
         "action" => "error404"

@@ -47,19 +47,26 @@ class UploadController extends \Phalcon\Mvc\Controller
                 $img = new Images();
                 $img->code = $imgcode;
                 $img->ext = $ext;
-                $img->opis = "";
+                $img->opis = $this->request->getPost("opis");
                 $img->user = $this->session->get("user_id");
                 if($img->user == "") $img->user = 0;
                 $img->ip = $this->request->getClientAddress();
                 $img->time = time();
                 $img->views = 0;
+                $img->album = $this->request->getPost("album");
                 $img->save();
+
+                if($img->album > 0){
+                    $album = Albums::findFirst("id='".$this->request->getPost("album")."'");
+                    ++$album->count;
+                    $album->update();
+                }
 
             }
 
         }
 
-        $this->response->redirect("../");
+        $this->response->redirect("../show/".$imgcode);
 
     }
 
