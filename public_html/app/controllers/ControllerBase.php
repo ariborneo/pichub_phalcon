@@ -29,12 +29,14 @@ class ControllerBase extends \Phalcon\Mvc\Controller
     public function initialize()
     {
 
-        $db = $this->getDi()->getShared('db');
+        $this->db = $this->getDi()->getShared('db');
 
         $this->user = new Users();
-        $this->user->id = 0;
-        $this->user->name = "";
-        $this->user->ban = 0;
+        $this->user->assign(array(
+            "id" => 0,
+            "name" => "",
+            "ban" => 0
+        ));
 
         $user_id = $this->cookies->get("user_id")->getValue();
         $user_hash = $this->cookies->get("user_hash")->getValue();
@@ -46,11 +48,14 @@ class ControllerBase extends \Phalcon\Mvc\Controller
                 $user = Users::findFirst($token->user);
                 if($user)
                 {
-                    $expire_time = time() + 30 * 86400;
-                    $this->cookies->set("user_id", $user_id, $expire_time);
-                    $this->cookies->set("user_hash", $user_hash, $expire_time);
-                    $token->expire = $expire_time;
-                    $token->update();
+                    if (mt_rand(1, 10) === 1)
+                    {
+                        $expire_time = time() + 30 * 86400;
+                        $this->cookies->set("user_id", $user_id, $expire_time);
+                        $this->cookies->set("user_hash", $user_hash, $expire_time);
+                        $token->expire = $expire_time;
+                        $token->update();
+                    }
                     $this->user = $user;
                 }
             }

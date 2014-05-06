@@ -12,5 +12,3 @@
 {% for image in images %}
     <a href="/show/{{ image["code"] }}" target="_blank"><img src="{{ image["path"] }}"></a>&nbsp;
 {% endfor %}
-
-{{ t._("hello") }}

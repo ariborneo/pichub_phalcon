@@ -45,11 +45,12 @@ class UserController extends ControllerBase
         if($this->request->isPost())
         {
             $album = new Albums();
-            $album->name = $this->request->getPost("name");
-            $album->user = $this->user->id;
-            $album->time = time();
-            $album->count = 0;
-            $album->save();
+            $album->assign(array(
+                "name" => $this->request->getPost("name"),
+                "user" => $this->user->id,
+                "time" => time(),
+                "count" => 0
+            ))->save();
             $this->response->redirect("user/".$this->user->name);
         }
     }

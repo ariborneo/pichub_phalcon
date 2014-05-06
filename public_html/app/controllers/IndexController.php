@@ -13,12 +13,13 @@ class IndexController extends ControllerBase
         if($this->request->isPost())
         {
             $feedback = new Feedback();
-            $feedback->name = $this->request->getPost("name");
-            $feedback->email = $this->request->getPost("email");
-            $feedback->subject = $this->request->getPost("subject");
-            $feedback->text = $this->request->getPost("text");
-            $feedback->time = time();
-            $feedback->save();
+            $feedback->assign(array(
+                "name" => $this->request->getPost("name"),
+                "email" => $this->request->getPost("email"),
+                "subject" => $this->request->getPost("subject"),
+                "text" => $this->request->getPost("text"),
+                "time" => time()
+            ))->save();
             $this->response->redirect();
         }
     }

@@ -46,10 +46,11 @@ class ImageController extends ControllerBase
         if(!Likes::findFirst("image=".$image->id." and user=".$uid))
         {
             $like = new Likes();
-            $like->image = $image->id;
-            $like->user = $uid;
-            $like->time = time();
-            $like->save();
+            $like->assign(array(
+                "image" => $image->id,
+                "user" => $uid,
+                "time" => time()
+            ))->save();
             ++$image->likes;
             $image->update();
         }
@@ -79,11 +80,12 @@ class ImageController extends ControllerBase
         if($uid > 0 && $image)
         {
             $comment = new Comments();
-            $comment->image = $image->id;
-            $comment->user = $uid;
-            $comment->text = $this->request->getPost("text");
-            $comment->time = time();
-            $comment->save();
+            $comment->assign(array(
+                "image" => $image->id,
+                "user" => $uid,
+                "text" => $this->request->getPost("text"),
+                "time" => time()
+            ))->save();
             ++$image->comments;
             $image->update();
         }
@@ -115,12 +117,13 @@ class ImageController extends ControllerBase
             if($image)
             {
                 $del_request = new DelRequests();
-                $del_request->image = $image->id;
-                $del_request->text = $this->request->getPost("text");
-                $del_request->user = $this->user->id;
-                $del_request->ip = $this->request->getClientAddress();
-                $del_request->time = time();
-                $del_request->save();
+                $del_request->assign(array(
+                    "image" => $image->id,
+                    "text" => $this->request->getPost("text"),
+                    "user" => $this->user->id,
+                    "ip" => $this->request->getClientAddress(),
+                    "time" => time()
+                ))->save();
             }
             $this->response->redirect();
         }
