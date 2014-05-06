@@ -19,7 +19,8 @@ class IndexController extends ControllerBase
                 "subject" => $this->request->getPost("subject"),
                 "text" => $this->request->getPost("text"),
                 "time" => time()
-            ))->save();
+            ));
+            $feedback->save();
             $this->response->redirect();
         }
     }

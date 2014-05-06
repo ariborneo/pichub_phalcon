@@ -47,7 +47,8 @@ class UploadController extends ControllerBase
                     "album" => $album,
                     "likes" => 0,
                     "comments" => 0,
-                ))->save();
+                ));
+                $img->save();
 
                 if($img->album > 0){
                     $album = Albums::findFirst($album);

@@ -50,7 +50,8 @@ class UserController extends ControllerBase
                 "user" => $this->user->id,
                 "time" => time(),
                 "count" => 0
-            ))->save();
+            ));
+            $album->save();
             $this->response->redirect("user/".$this->user->name);
         }
     }

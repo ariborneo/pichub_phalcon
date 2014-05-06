@@ -26,7 +26,8 @@ class LoginController extends ControllerBase
             "time" => time(),
             "expire" => time() + 30 * 86400,
             "hash" => Helpers::sha256($this->request->getUserAgent())
-        ))->save();
+        ));
+        $token->save();
         $this->cookies->set("user_id", $user->id, $token->expire);
         $this->cookies->set("user_hash", $token->hash, $token->expire);
     }
@@ -63,7 +64,8 @@ class LoginController extends ControllerBase
                 "email" => $email,
                 "password" => Helpers::sha256($password),
                 "time" => time()
-            ))->save();
+            ));
+            $user->save();
 
             $this->login_complete($user);
 

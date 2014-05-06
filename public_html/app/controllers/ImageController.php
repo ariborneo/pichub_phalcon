@@ -50,7 +50,8 @@ class ImageController extends ControllerBase
                 "image" => $image->id,
                 "user" => $uid,
                 "time" => time()
-            ))->save();
+            ));
+            $like->save();
             ++$image->likes;
             $image->update();
         }
@@ -85,7 +86,8 @@ class ImageController extends ControllerBase
                 "user" => $uid,
                 "text" => $this->request->getPost("text"),
                 "time" => time()
-            ))->save();
+            ));
+            $comment->save();
             ++$image->comments;
             $image->update();
         }
@@ -123,7 +125,8 @@ class ImageController extends ControllerBase
                     "user" => $this->user->id,
                     "ip" => $this->request->getClientAddress(),
                     "time" => time()
-                ))->save();
+                ));
+                $del_request->save();
             }
             $this->response->redirect();
         }
