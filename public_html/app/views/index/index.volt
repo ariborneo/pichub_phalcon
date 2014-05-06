@@ -1,13 +1,13 @@
 <form action="upload" method="post" enctype="multipart/form-data" style="border: #000000 1px solid;">
     <input type="file" name="Filedata" id="file" size="60" accept="image/*"><br>
     {% if user.id > 0 %}
-    Альбом:
-    <select name="album">
-        <option value="0">-</option>
-        {% for album in albums %}
-            <option value="{{ album["id"] }}">{{ album["name"] }}</option>
-        {% endfor %}
-    </select><br>
+        Альбом:
+        <select name="album">
+            <option value="0">-</option>
+            {% for album in albums %}
+                <option value="{{ album["id"] }}">{{ album["name"] }}</option>
+            {% endfor %}
+        </select><br>
     {% endif %}
     Описание:<br>
     <textarea name="opis"></textarea><br>

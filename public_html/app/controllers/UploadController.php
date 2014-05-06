@@ -36,18 +36,18 @@ class UploadController extends ControllerBase
                 }
 
                 $img = new Images();
-                $img->code = $imgcode;
-                $img->ext = $ext;
-                $img->opis = $this->request->getPost("opis");
-                $img->user = $this->user->id;
-                if($img->user == "") $img->user = 0;
-                $img->ip = $this->request->getClientAddress();
-                $img->time = time();
-                $img->views = 0;
-                $img->album = $album;
-                $img->likes = 0;
-                $img->comments = 0;
-                $img->save();
+                $img->assign(array(
+                    "code" => $imgcode,
+                    "ext" => $ext,
+                    "opis" => $this->request->getPost("opis"),
+                    "user" => $this->user->id,
+                    "ip" => $this->request->getClientAddress(),
+                    "time" => time(),
+                    "views" => 0,
+                    "album" => $album,
+                    "likes" => 0,
+                    "comments" => 0,
+                ))->save();
 
                 if($img->album > 0){
                     $album = Albums::findFirst($album);
