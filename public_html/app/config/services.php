@@ -38,7 +38,8 @@ $di->set('db', function () use ($config) {
         'host' => $config->database->host,
         'username' => $config->database->username,
         'password' => $config->database->password,
-        'dbname' => $config->database->dbname
+        'dbname' => $config->database->dbname,
+        "charset" => "utf8"
     ));
 });
 
@@ -46,20 +47,28 @@ $di->set('modelsMetadata', function () {
     return new MetaDataAdapter();
 });
 
+$di->set('cookies', function () {
+    $cookies = new Phalcon\Http\Response\Cookies();
+    $cookies->useEncryption(true);
+    return $cookies;
+});
+
+/*
 $di->set('session', function () {
     $session = new SessionAdapter();
     $session->start();
     return $session;
 });
+*/
 
 $di->set('crypt', function() {
     $crypt = new Phalcon\Crypt();
-    $crypt->setKey('9S8(Y0=<34D№xfLj/[7<');
+    $crypt->setKey("9S8(Y0=<34D№xfLj/[7<");
     return $crypt;
 });
 
 $di->set('router', function() {
-    $router = new Phalcon\Mvc\Router();
+    $router = new Phalcon\Mvc\Router(false);
     $router->add(
         "/",
         array(
@@ -91,8 +100,49 @@ $di->set('router', function() {
     $router->add(
         "/show/([a-z0-9]+)([/]?)",
         array(
-            "controller" => "show",
+            "controller" => "image",
             "action"     => "index",
+            "code" => 1
+        )
+    );
+    $router->add(
+        "/like/([a-z0-9]+)([/]?)",
+        array(
+            "controller" => "image",
+            "action"     => "like",
+            "code" => 1
+        )
+    );
+    $router->add(
+        "/dislike/([a-z0-9]+)([/]?)",
+        array(
+            "controller" => "image",
+            "action"     => "dislike",
+            "code" => 1
+        )
+    );
+    $router->add(
+        "/comment_add/([a-z0-9]+)([/]?)",
+        array(
+            "controller" => "image",
+            "action"     => "comment_add",
+            "code" => 1
+        )
+    );
+    $router->add(
+        "/comment_del/([a-z0-9]+)/([0-9]+)([/]?)",
+        array(
+            "controller" => "image",
+            "action"     => "comment_del",
+            "code" => 1,
+            "id" => 2
+        )
+    );
+    $router->add(
+        "/del_request/([a-z0-9]+)([/]?)",
+        array(
+            "controller" => "image",
+            "action"     => "del_request",
             "code" => 1
         )
     );
@@ -131,6 +181,20 @@ $di->set('router', function() {
             "controller" => "user",
             "action"     => "album",
             "id" => 1
+        )
+    );
+    $router->add(
+        "/upload",
+        array(
+            "controller" => "upload",
+            "action"     => "index"
+        )
+    );
+    $router->add(
+        "/feedback",
+        array(
+            "controller" => "index",
+            "action"     => "feedback"
         )
     );
     $router->notFound(array(

@@ -1,6 +1,6 @@
 <?php
 
-class ChartsController extends \Phalcon\Mvc\Controller
+class ChartsController extends ControllerBase
 {
 
     public function indexAction() { }

@@ -1,6 +1,6 @@
 <?php
 
-class LoginController extends \Phalcon\Mvc\Controller
+class LoginController extends ControllerBase
 {
 
     public function indexAction()
@@ -9,27 +9,48 @@ class LoginController extends \Phalcon\Mvc\Controller
         {
             $name = $this->request->getPost("name");
             $password = $this->request->getPost("password");
-            $user = Users::findFirst(array(
-                "name" => $name
-            ));
-            if($user->readAttribute("password") == md5($password)){
-                $this->session->set("user_id", $user->readAttribute("id"));
-                $this->session->set("user_name", $name);
+            $user = Users::findFirst("name='".$name."' and password='".Helpers::sha256($password)."'");
+            if($user)
+            {
+                $this->login_complete($user);
             }
         }
-        $this->response->redirect("../");
+        $this->response->redirect();
+    }
+
+    protected function login_complete($user)
+    {
+        $token = new Tokens();
+        $token->user = $user->id;
+        $token->time = time();
+        $token->expire = time() + 30 * 86400;
+        $token->hash = Helpers::sha256($this->request->getUserAgent());
+        $token->save();
+        $this->cookies->set("user_id", $user->id, $token->expire);
+        $this->cookies->set("user_hash", $token->hash, $token->expire);
     }
 
     public function logoutAction()
     {
-        $this->session->destroy();
-        $this->response->redirect("../");
+        $user_id = $this->cookies->get("user_id")->getValue();
+        $user_hash = $this->cookies->get("user_hash")->getValue();
+        if($user_id > 0 && strlen($user_hash) > 0)
+        {
+            $token = Tokens::findFirst("user=".$user_id." and hash='".$user_hash."'");
+            if($token)
+            {
+                $token->delete();
+            }
+        }
+        $this->cookies->delete("user_id");
+        $this->cookies->delete("user_hash");
+        $this->response->redirect();
     }
 
     public function registrationAction()
     {
-        if($this->request->isPost()){
-            $this->view->disable();
+        if($this->request->isPost())
+        {
 
             $name = $this->request->getPost("name");
             $email = $this->request->getPost("email");
@@ -38,14 +59,13 @@ class LoginController extends \Phalcon\Mvc\Controller
             $user = new Users();
             $user->name = $name;
             $user->email = $email;
-            $user->password = md5($password);
-            $user->reg_time = time();
+            $user->password = Helpers::sha256($password);
+            $user->time = time();
             $user->save();
 
-            $this->session->set("user_id", $user->readAttribute("id"));
-            $this->session->set("user_name", $name);
+            $this->login_complete($user);
 
-            $this->response->redirect("../");
+            $this->response->redirect();
         }
     }
 

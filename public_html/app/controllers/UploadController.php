@@ -1,63 +1,56 @@
 <?php
 
-class UploadController extends \Phalcon\Mvc\Controller
+class UploadController extends ControllerBase
 {
 
     public function indexAction()
     {
 
-        $up = new Upload();
-
         foreach ($this->request->getUploadedFiles() as $file) {
 
-            if($up->check_type($file->getType())){
+            if(Helpers::check_file_type($file->getType())){
 
-                $b_folder = $up->create_folders("b");
-                $c_folder = $up->create_folders("c");
-                $s_folder = $up->create_folders("s");
+                $folders = Helpers::create_folders();
 
-                $imgcode = $up->generatekey();
+                $imgcode = Helpers::generatekey();
                 while(Images::findFirst("code='".$imgcode."'")){
-                    $imgcode = $up->generatekey();
+                    $imgcode = Helpers::generatekey();
                 };
-                $ext = $up->getext($file->getName());
+                $ext = Helpers::getext($file->getName());
                 $filename = $imgcode . "." .  $ext;
 
-                $file->moveTo('../public/'. $b_folder . $filename);
+                $file->moveTo('../'. $folders["b"] . $filename);
 
-                $image = new Phalcon\Image\Adapter\GD('../public/'. $b_folder . $filename);
+                $image = new Imgproc("../". $folders["b"] . $filename);
                 $image->resize(200);
-                $image->save('../public/'. $s_folder . $filename);
+                $image->save('../'. $folders["s"] . $filename);
 
-                $image = new Phalcon\Image\Adapter\GD('../public/'. $b_folder . $filename);
-                $w = $image->getWidth();
-                $h = $image->getHeight();
-                if($h > $w){
-                    $o_x = 0;
-                    $o_y = round(($h-$w)/2);
-                    $image->crop($w, $w, $o_x, $o_y);
-                }else{
-                    $o_x = round(($w-$h)/2);
-                    $o_y = 0;
-                    $image->crop($h, $h, $o_x, $o_y);
+                $image = new Imgproc("../". $folders["b"] . $filename);
+                $image->alter_crop(100);
+                $image->save('../'. $folders["c"] . $filename);
+
+                $album = $this->request->getPost("album");
+                if(!($album > 0 && Albums::findFirst("user=".$this->user->id)))
+                {
+                    $album = 0;
                 }
-                $image->resize(100);
-                $image->save('../public/'. $c_folder . $filename);
 
                 $img = new Images();
                 $img->code = $imgcode;
                 $img->ext = $ext;
                 $img->opis = $this->request->getPost("opis");
-                $img->user = $this->session->get("user_id");
+                $img->user = $this->user->id;
                 if($img->user == "") $img->user = 0;
                 $img->ip = $this->request->getClientAddress();
                 $img->time = time();
                 $img->views = 0;
-                $img->album = $this->request->getPost("album");
+                $img->album = $album;
+                $img->likes = 0;
+                $img->comments = 0;
                 $img->save();
 
                 if($img->album > 0){
-                    $album = Albums::findFirst("id='".$this->request->getPost("album")."'");
+                    $album = Albums::findFirst($album);
                     ++$album->count;
                     $album->update();
                 }
@@ -66,7 +59,7 @@ class UploadController extends \Phalcon\Mvc\Controller
 
         }
 
-        $this->response->redirect("../show/".$imgcode);
+        $this->response->redirect("show/".$imgcode);
 
     }
 

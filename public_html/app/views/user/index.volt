@@ -1,5 +1,5 @@
 Логин: {{ user["login"] }}<br>
-Дата региастрации: {{ user["reg_time"] }}<br>
+Дата региастрации: {{ user["time"] }}<br>
 
 <a href="/create_album">Создать альбом</a><br>
 
@@ -10,5 +10,7 @@
 
 <br>Изображения:<br>
 {% for image in images %}
-    <a href="/show/{{ image["code"] }}" target="_blank"><img src="/{{ image["path"] }}"></a>&nbsp;
+    <a href="/show/{{ image["code"] }}" target="_blank"><img src="{{ image["path"] }}"></a>&nbsp;
 {% endfor %}
+
+{{ t._("hello") }}
