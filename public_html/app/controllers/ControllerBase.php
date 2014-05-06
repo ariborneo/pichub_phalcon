@@ -5,6 +5,8 @@ class ControllerBase extends \Phalcon\Mvc\Controller
 
     public $user;
 
+    public $db;
+
     protected function _getTranslation()
     {
         $language = $this->request->getBestLanguage();
@@ -21,11 +23,13 @@ class ControllerBase extends \Phalcon\Mvc\Controller
 
     protected function delete_expired()
     {
-        $this->modelsManager->createQuery("DELETE FROM tokens WHERE expire < ".time())->execute();
+        $this->db->query("delete from tokens where expire < ".time());
     }
 
     public function initialize()
     {
+
+        $db = $this->getDi()->getShared('db');
 
         $this->user = new Users();
         $this->user->id = 0;
@@ -42,12 +46,11 @@ class ControllerBase extends \Phalcon\Mvc\Controller
                 $user = Users::findFirst($token->user);
                 if($user)
                 {
-                    /*
-                    $this->cookies->set("user_id", $user_id, time() + 30 * 86400);
-                    $this->cookies->set("user_hash", $user_hash, time() + 30 * 86400);
-                    $token->expire = time() + 30 * 86400;
+                    $expire_time = time() + 30 * 86400;
+                    $this->cookies->set("user_id", $user_id, $expire_time);
+                    $this->cookies->set("user_hash", $user_hash, $expire_time);
+                    $token->expire = $expire_time;
                     $token->update();
-                    */
                     $this->user = $user;
                 }
             }
