@@ -9,8 +9,7 @@ class ImageController extends ControllerBase
         $img = Images::findFirst("code='".$code."'");
         if($img)
         {
-            ++$img->views;
-            $img->update();
+            $img->increase("views");
             $album = Albums::findFirst($img->album);
             if($album) $album = $album->toArray();
 
@@ -23,7 +22,10 @@ class ImageController extends ControllerBase
                 "views" => $img->views,
                 "album" => $album,
                 "likes" => $img->likes,
-                "me_like" => Likes::findFirst("image=".$img->id." and user=".$this->user->id),
+                "me_like" => Likes::findFirst(array(
+                        "image = ?0 and user = ?1",
+                        "bind" => array($img->id, $this->user->id)
+                )),
                 "comments" => $img->comments
             ));
 
@@ -43,17 +45,10 @@ class ImageController extends ControllerBase
         $code = $this->dispatcher->getParam("code");
         $uid = $this->user->id;
         $image = Images::findFirst("code='".$code."'");
-        if(!Likes::findFirst("image=".$image->id." and user=".$uid))
+        if(!Likes::check($image->id, $uid))
         {
-            $like = new Likes();
-            $like->assign(array(
-                "image" => $image->id,
-                "user" => $uid,
-                "time" => time()
-            ));
-            $like->save();
-            ++$image->likes;
-            $image->update();
+            Likes::add($image->id, $uid);
+            $image->increase("likes");
         }
         $this->response->redirect("show/".$code);
     }
@@ -63,12 +58,14 @@ class ImageController extends ControllerBase
         $code = $this->dispatcher->getParam("code");
         $uid = $this->user->id;
         $image = Images::findFirst("code='".$code."'");
-        $like = Likes::findFirst("image=".$image->id." and user=".$uid);
+        $like = Likes::findFirst(array(
+            "image = ?0 and user = ?1",
+            "bind" => array($image->id, $uid)
+        ));
         if($like)
         {
             $like->delete();
-            --$image->likes;
-            $image->update();
+            $image->decrease("likes");
         }
         $this->response->redirect("show/".$code);
     }
@@ -88,8 +85,7 @@ class ImageController extends ControllerBase
                 "time" => time()
             ));
             $comment->save();
-            ++$image->comments;
-            $image->update();
+            $image->increase("comments");
         }
         $this->response->redirect("show/".$code);
     }
@@ -103,8 +99,7 @@ class ImageController extends ControllerBase
         if($uid == $comment->user)
         {
             $image = Images::findFirst($comment->image);
-            --$image->comments;
-            $image->update();
+            $image->decrease("comments");
             $comment->delete();
         }
         $this->response->redirect("show/".$code);
@@ -119,7 +114,7 @@ class ImageController extends ControllerBase
             if($image)
             {
                 $del_request = new DelRequests();
-                $del_request->assign(array(
+                $del_request->create()->assign(array(
                     "image" => $image->id,
                     "text" => $this->request->getPost("text"),
                     "user" => $this->user->id,

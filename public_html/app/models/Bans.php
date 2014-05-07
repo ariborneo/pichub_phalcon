@@ -1,3 +1,3 @@
 <?php
 
-class Bans extends \Phalcon\Mvc\Model { }
+class Bans extends CustomModel { }

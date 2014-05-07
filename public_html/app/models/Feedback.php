@@ -1,3 +1,3 @@
 <?php
 
-class Feedback extends \Phalcon\Mvc\Model { }
+class Feedback extends CustomModel { }

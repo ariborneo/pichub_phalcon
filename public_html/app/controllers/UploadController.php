@@ -30,7 +30,7 @@ class UploadController extends ControllerBase
                 $image->save('../'. $folders["c"] . $filename);
 
                 $album = $this->request->getPost("album");
-                if(!($album > 0 && Albums::findFirst("user=".$this->user->id)))
+                if(!($album > 0 && Albums::findFirst(array("id=?0 and user=?1", "bind" => array($album, $this->user->id)))))
                 {
                     $album = 0;
                 }
@@ -52,8 +52,7 @@ class UploadController extends ControllerBase
 
                 if($img->album > 0){
                     $album = Albums::findFirst($album);
-                    ++$album->count;
-                    $album->update();
+                    $album->increase("count");
                 }
 
             }

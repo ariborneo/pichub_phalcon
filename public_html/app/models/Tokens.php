@@ -1,3 +1,3 @@
 <?php
 
-class Tokens extends \Phalcon\Mvc\Model { }
+class Tokens extends CustomModel { }

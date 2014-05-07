@@ -1,3 +1,3 @@
 <?php
 
-class Images extends \Phalcon\Mvc\Model { }
+class Images extends CustomModel { }

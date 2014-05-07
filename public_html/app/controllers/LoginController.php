@@ -9,7 +9,10 @@ class LoginController extends ControllerBase
         {
             $name = $this->request->getPost("name");
             $password = $this->request->getPost("password");
-            $user = Users::findFirst("name='".$name."' and password='".Helpers::sha256($password)."'");
+            $user = Users::findFirst(array(
+                "name = ?0 and password = ?1",
+                "bind" => array($name, Helpers::sha256($password))
+            ));
             if($user)
             {
                 $this->login_complete($user);
@@ -24,8 +27,9 @@ class LoginController extends ControllerBase
         $token->assign(array(
             "user" => $user->id,
             "time" => time(),
+            "ip" => $this->request->getClientAddress(),
             "expire" => time() + 30 * 86400,
-            "hash" => Helpers::sha256($this->request->getUserAgent())
+            "hash" => Helpers::sha256($user->id . $user->password . $this->request->getUserAgent())
         ));
         $token->save();
         $this->cookies->set("user_id", $user->id, $token->expire);
@@ -38,7 +42,10 @@ class LoginController extends ControllerBase
         $user_hash = $this->cookies->get("user_hash")->getValue();
         if($user_id > 0 && strlen($user_hash) > 0)
         {
-            $token = Tokens::findFirst("user=".$user_id." and hash='".$user_hash."'");
+            $token = Tokens::findFirst(array(
+                "user = ?0 and hash = ?1",
+                "bind" => array($user_id, $user_hash)
+            ));
             if($token)
             {
                 $token->delete();
@@ -63,7 +70,8 @@ class LoginController extends ControllerBase
                 "name" => $name,
                 "email" => $email,
                 "password" => Helpers::sha256($password),
-                "time" => time()
+                "time" => time(),
+                "active" => 1
             ));
             $user->save();
 

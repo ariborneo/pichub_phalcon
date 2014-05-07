@@ -1,6 +1,6 @@
 <?php
 
-class Helpers extends \Phalcon\Mvc\Model
+class Helpers extends CustomModel
 {
 
     static function check_file_type($type){

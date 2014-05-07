@@ -1,3 +1,3 @@
 <?php
 
-class Comments extends \Phalcon\Mvc\Model { }
+class Comments extends CustomModel { }
