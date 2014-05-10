@@ -31,7 +31,8 @@ class ImageController extends ControllerBase
 
             $this->view->setVar("comments", Comments::find(array(
                 "image=".$img->id,
-                "order" => "id DESC"
+                "order" => "id DESC",
+                "cache" => array("key" => "comments_".$img->id)
             )));
         }
         else
@@ -78,13 +79,12 @@ class ImageController extends ControllerBase
         if($uid > 0 && $image)
         {
             $comment = new Comments();
-            $comment->assign(array(
+            $comment->save(array(
                 "image" => $image->id,
                 "user" => $uid,
                 "text" => $this->request->getPost("text"),
                 "time" => time()
             ));
-            $comment->save();
             $image->increase("comments");
         }
         $this->response->redirect("show/".$code);
@@ -114,14 +114,13 @@ class ImageController extends ControllerBase
             if($image)
             {
                 $del_request = new DelRequests();
-                $del_request->create()->assign(array(
+                $del_request->save(array(
                     "image" => $image->id,
                     "text" => $this->request->getPost("text"),
                     "user" => $this->user->id,
-                    "ip" => $this->request->getClientAddress(),
+                    "ip" => ip2long($this->request->getClientAddress()),
                     "time" => time()
                 ));
-                $del_request->save();
             }
             $this->response->redirect();
         }

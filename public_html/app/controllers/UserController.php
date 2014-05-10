@@ -6,7 +6,7 @@ class UserController extends ControllerBase
     public function indexAction()
     {
         $name = $this->dispatcher->getParam("name");
-        $user = Users::findFirst("name='".$name."'");
+        $user = Users::findFirst(array("name='".$name."'", "cache" => array("key" => "user_".$name)));
 
         if($user)
         {
@@ -42,16 +42,15 @@ class UserController extends ControllerBase
 
     public function create_albumAction()
     {
-        if($this->request->isPost())
+        if($this->request->isPost() && $this->user->id > 0)
         {
             $album = new Albums();
-            $album->assign(array(
+            $album->save(array(
                 "name" => $this->request->getPost("name"),
                 "user" => $this->user->id,
                 "time" => time(),
                 "count" => 0
             ));
-            $album->save();
             $this->response->redirect("user/".$this->user->name);
         }
     }

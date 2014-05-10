@@ -24,14 +24,13 @@ class LoginController extends ControllerBase
     protected function login_complete($user)
     {
         $token = new Tokens();
-        $token->assign(array(
+        $token->save(array(
             "user" => $user->id,
             "time" => time(),
-            "ip" => $this->request->getClientAddress(),
+            "ip" => ip2long($this->request->getClientAddress()),
             "expire" => time() + 30 * 86400,
             "hash" => Helpers::sha256($user->id . $user->password . $this->request->getUserAgent())
         ));
-        $token->save();
         $this->cookies->set("user_id", $user->id, $token->expire);
         $this->cookies->set("user_hash", $token->hash, $token->expire);
     }
@@ -66,14 +65,13 @@ class LoginController extends ControllerBase
             $password = $this->request->getPost("password");
 
             $user = new Users();
-            $user->assign(array(
+            $user->save(array(
                 "name" => $name,
                 "email" => $email,
                 "password" => Helpers::sha256($password),
                 "time" => time(),
                 "active" => 1
             ));
-            $user->save();
 
             $this->login_complete($user);
 

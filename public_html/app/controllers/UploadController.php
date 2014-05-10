@@ -19,13 +19,10 @@ class UploadController extends ControllerBase
                 $ext = Helpers::getext($file->getName());
                 $filename = $imgcode . "." .  $ext;
 
-                $file->moveTo('../'. $folders["b"] . $filename);
-
-                $image = new Imgproc("../". $folders["b"] . $filename);
+                $image = new Imgproc($file->getTempName());
+                $image->save('../'. $folders["b"] . $filename);
                 $image->resize(200);
                 $image->save('../'. $folders["s"] . $filename);
-
-                $image = new Imgproc("../". $folders["b"] . $filename);
                 $image->alter_crop(100);
                 $image->save('../'. $folders["c"] . $filename);
 
@@ -36,19 +33,18 @@ class UploadController extends ControllerBase
                 }
 
                 $img = new Images();
-                $img->assign(array(
+                $img->save(array(
                     "code" => $imgcode,
                     "ext" => $ext,
                     "opis" => $this->request->getPost("opis"),
                     "user" => $this->user->id,
-                    "ip" => $this->request->getClientAddress(),
+                    "ip" => ip2long($this->request->getClientAddress()),
                     "time" => time(),
                     "views" => 0,
                     "album" => $album,
                     "likes" => 0,
                     "comments" => 0,
                 ));
-                $img->save();
 
                 if($img->album > 0){
                     $album = Albums::findFirst($album);

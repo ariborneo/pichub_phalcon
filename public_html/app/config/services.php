@@ -23,7 +23,7 @@ $di->set('view', function () use ($config) {
         '.volt' => function ($view, $di) use ($config) {
             $volt = new VoltEngine($view, $di);
             $volt->setOptions(array(
-                'compiledPath' => $config->application->cacheDir,
+                'compiledPath' => $config->application->cacheDir . "volt/",
                 'compiledSeparator' => '_'
             ));
             return $volt;
@@ -67,70 +67,81 @@ $di->set('crypt', function() {
     return $crypt;
 });
 
+$di->set('modelsCache', function() use ($config) {
+    $frontCache = new \Phalcon\Cache\Frontend\Data(array(
+        "lifetime" => 86400
+    ));
+    $cache = new \Phalcon\Cache\Backend\File($frontCache, array(
+        'cacheDir' => $config->application->cacheDir . "models/"
+    ));
+    return $cache;
+});
+
+$di->set('viewCache', function() use ($config) {
+    $frontCache = new \Phalcon\Cache\Frontend\Output(array(
+        "lifetime" => 86400
+    ));
+    $cache = new \Phalcon\Cache\Backend\File($frontCache, array(
+        'cacheDir' => $config->application->cacheDir . "views/"
+    ));
+    return $cache;
+});
+
 $di->set('router', function() {
     $router = new Phalcon\Mvc\Router(false);
-    $router->add(
-        "/",
+    $router->add("/",
         array(
             "controller" => "index",
             "action"     => "index",
         )
     );
-    $router->add(
-        "/login",
+    $router->add("/login",
         array(
             "controller" => "login",
             "action"     => "index",
         )
     );
-    $router->add(
-        "/logout",
+    $router->add("/logout",
         array(
             "controller" => "login",
             "action"     => "logout",
         )
     );
-    $router->add(
-        "/registration",
+    $router->add("/registration",
         array(
             "controller" => "login",
             "action"     => "registration",
         )
     );
-    $router->add(
-        "/show/([a-z0-9]+)([/]?)",
+    $router->add("/show/([a-z0-9]+)([/]?)",
         array(
             "controller" => "image",
             "action"     => "index",
             "code" => 1
         )
     );
-    $router->add(
-        "/like/([a-z0-9]+)([/]?)",
+    $router->add("/like/([a-z0-9]+)([/]?)",
         array(
             "controller" => "image",
             "action"     => "like",
             "code" => 1
         )
     );
-    $router->add(
-        "/dislike/([a-z0-9]+)([/]?)",
+    $router->add("/dislike/([a-z0-9]+)([/]?)",
         array(
             "controller" => "image",
             "action"     => "dislike",
             "code" => 1
         )
     );
-    $router->add(
-        "/comment_add/([a-z0-9]+)([/]?)",
+    $router->add("/comment_add/([a-z0-9]+)([/]?)",
         array(
             "controller" => "image",
             "action"     => "comment_add",
             "code" => 1
         )
     );
-    $router->add(
-        "/comment_del/([a-z0-9]+)/([0-9]+)([/]?)",
+    $router->add("/comment_del/([a-z0-9]+)/([0-9]+)([/]?)",
         array(
             "controller" => "image",
             "action"     => "comment_del",
@@ -138,60 +149,52 @@ $di->set('router', function() {
             "id" => 2
         )
     );
-    $router->add(
-        "/del_request/([a-z0-9]+)([/]?)",
+    $router->add("/del_request/([a-z0-9]+)([/]?)",
         array(
             "controller" => "image",
             "action"     => "del_request",
             "code" => 1
         )
     );
-    $router->add(
-        "/user/(.*)",
+    $router->add("/user/(.*)",
         array(
             "controller" => "user",
             "action"     => "index",
             "name" => 1
         )
     );
-    $router->add(
-        "/top",
+    $router->add("/top",
         array(
             "controller" => "charts",
             "action"     => "top",
         )
     );
-    $router->add(
-        "/last",
+    $router->add("/last",
         array(
             "controller" => "charts",
             "action"     => "last",
         )
     );
-    $router->add(
-        "/create_album",
+    $router->add("/create_album",
         array(
             "controller" => "user",
             "action"     => "create_album",
         )
     );
-    $router->add(
-        "/album/([0-9]+)([/]?)",
+    $router->add("/album/([0-9]+)([/]?)",
         array(
             "controller" => "user",
             "action"     => "album",
             "id" => 1
         )
     );
-    $router->add(
-        "/upload",
+    $router->add("/upload",
         array(
             "controller" => "upload",
             "action"     => "index"
         )
     );
-    $router->add(
-        "/feedback",
+    $router->add("/feedback",
         array(
             "controller" => "index",
             "action"     => "feedback"

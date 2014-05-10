@@ -10,7 +10,10 @@ class ControllerBase extends \Phalcon\Mvc\Controller
     protected function _getTranslation()
     {
         $language = $this->request->getBestLanguage();
-        $language = substr($language, 0, strpos($language, "-"));
+        if(strlen($language) > 2)
+        {
+            $language = substr($language, 0, strpos($language, "-"));
+        }
         if (file_exists("../app/languages/".$language.".php")) {
             require "../app/languages/".$language.".php";
         } else {
@@ -28,7 +31,8 @@ class ControllerBase extends \Phalcon\Mvc\Controller
 
     protected function check_bans()
     {
-        if(Bans::findFirst("ip='".$this->request->getClientAddress()."'"))
+        $ip = ip2long($this->request->getClientAddress());
+        if(Bans::findFirst(array("ip='".$ip."'", "cache" => array("key" => "ban-".$ip))))
         {
             $this->view->disable();
             echo "Baned IP";
@@ -46,7 +50,7 @@ class ControllerBase extends \Phalcon\Mvc\Controller
         $user_hash = $this->cookies->get("user_hash")->getValue();
         if($user_id > 0 && strlen($user_hash) == 64)
         {
-            $user = Users::findFirst($user_id);
+            $user = Users::findFirst(array($user_id, "cache" => array("key" => "user_".$user_id, "lifetime" => 300)));
             if($user)
             {
                 $token = Tokens::findFirst(array(
