@@ -33,7 +33,7 @@ class UploadController extends ControllerBase
                 }
 
                 $img = new Images();
-                $img->save(array(
+                $img->assign(array(
                     "code" => $imgcode,
                     "ext" => $ext,
                     "opis" => $this->request->getPost("opis"),
@@ -44,7 +44,9 @@ class UploadController extends ControllerBase
                     "album" => $album,
                     "likes" => 0,
                     "comments" => 0,
+                    "private" => 0
                 ));
+                $img->save();
 
                 if($img->album > 0){
                     $album = Albums::findFirst($album);

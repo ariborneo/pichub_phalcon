@@ -49,7 +49,8 @@ class UserController extends ControllerBase
                 "name" => $this->request->getPost("name"),
                 "user" => $this->user->id,
                 "time" => time(),
-                "count" => 0
+                "count" => 0,
+                "private" => 0
             ));
             $this->response->redirect("user/".$this->user->name);
         }

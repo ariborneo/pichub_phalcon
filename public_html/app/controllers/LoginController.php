@@ -70,6 +70,8 @@ class LoginController extends ControllerBase
                 "email" => $email,
                 "password" => Helpers::sha256($password),
                 "time" => time(),
+                "ban" => 0,
+                "role" => 0,
                 "active" => 1
             ));
 
