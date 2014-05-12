@@ -1,5 +1,8 @@
 <?php
 
+use Phalcon\Validation\Validator\PresenceOf,
+    Phalcon\Validation\Validator\StringLength;
+
 class ImageController extends ControllerBase
 {
 
@@ -116,18 +119,38 @@ class ImageController extends ControllerBase
         {
             $code = $this->dispatcher->getParam("code");
             $image = Images::findFirst("code='".$code."'");
-            if($image)
+            if($image && $image->user != $this->user->id)
             {
-                $del_request = new DelRequests();
-                $del_request->save(array(
-                    "image" => $image->id,
-                    "text" => $this->request->getPost("text"),
-                    "user" => $this->user->id,
-                    "ip" => ip2long($this->request->getClientAddress()),
-                    "time" => time()
-                ));
+                $validation = new Phalcon\Validation();
+                $validation
+                    ->add('text', new PresenceOf(array(
+                        'message' => 'The text is required'
+                    )))
+                    ->add('text', new StringLength(array(
+                        'minimumMessage' => 'The text is too short',
+                        'min' => 20
+                    )));
+                $messages = $validation->validate($_POST);
+                if (count($messages)) {
+                    $array = array();
+                    foreach ($messages as $message) {
+                        $array[] = $message->getMessage();
+                    }
+                    echo json_encode($array);exit;
+                }
+                else
+                {
+                    $del_request = new DelRequests();
+                    $del_request->save(array(
+                        "image" => $image->id,
+                        "text" => $this->request->getPost("text"),
+                        "user" => $this->user->id,
+                        "ip" => ip2long($this->request->getClientAddress()),
+                        "time" => time()
+                    ));
+                    $this->response->redirect();
+                }
             }
-            $this->response->redirect();
         }
     }
 

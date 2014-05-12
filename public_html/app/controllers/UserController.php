@@ -1,5 +1,7 @@
 <?php
 
+use Phalcon\Validation\Validator\PresenceOf;
+
 class UserController extends ControllerBase
 {
 
@@ -45,15 +47,31 @@ class UserController extends ControllerBase
     {
         if($this->request->isPost() && $this->user->id > 0)
         {
-            $album = new Albums();
-            $album->save(array(
-                "name" => $this->request->getPost("name"),
-                "user" => $this->user->id,
-                "time" => time(),
-                "count" => 0,
-                "private" => 0
-            ));
-            $this->response->redirect("user/".$this->user->name);
+            $validation = new Phalcon\Validation();
+            $validation
+                ->add('name', new PresenceOf(array(
+                    'message' => 'The name is required'
+                )));
+            $messages = $validation->validate($_POST);
+            if (count($messages)) {
+                $array = array();
+                foreach ($messages as $message) {
+                    $array[] = $message->getMessage();
+                }
+                echo json_encode($array);exit;
+            }
+            else
+            {
+                $album = new Albums();
+                $album->save(array(
+                    "name" => $this->request->getPost("name"),
+                    "user" => $this->user->id,
+                    "time" => time(),
+                    "count" => 0,
+                    "private" => 0
+                ));
+                $this->response->redirect("user/".$this->user->name);
+            }
         }
     }
 

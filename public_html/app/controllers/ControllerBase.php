@@ -9,6 +9,8 @@ class ControllerBase extends \Phalcon\Mvc\Controller
 
     public $t;
 
+    public $config;
+
     protected function _getTranslation()
     {
         $language = $this->request->getBestLanguage();
@@ -84,6 +86,8 @@ class ControllerBase extends \Phalcon\Mvc\Controller
     {
 
         $this->db = $this->getDi()->getShared('db');
+
+        $this->config = Config::find(array("cache" => array("key" => "config")));
 
         $this->user = new Users();
         $this->user->setNulls();
