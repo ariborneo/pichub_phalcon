@@ -6,7 +6,12 @@ class UploadController extends ControllerBase
     public function indexAction()
     {
 
-        foreach ($this->request->getUploadedFiles() as $file) {
+        $error = "";
+
+        if($this->request->isPost() && count($this->request->getUploadedFiles()) > 0)
+        {
+
+            $file = current($this->request->getUploadedFiles());
 
             if(Helpers::check_file_type($file->getType())){
 
@@ -20,11 +25,11 @@ class UploadController extends ControllerBase
                 $filename = $imgcode . "." .  $ext;
 
                 $image = new Imgproc($file->getTempName());
-                $image->save('../'. $folders["b"] . $filename);
+                $image->save('../public/'. $folders["b"] . $filename);
                 $image->resize(200);
-                $image->save('../'. $folders["s"] . $filename);
+                $image->save('../public/'. $folders["s"] . $filename);
                 $image->alter_crop(100);
-                $image->save('../'. $folders["c"] . $filename);
+                $image->save('../public/'. $folders["c"] . $filename);
 
                 $album = $this->request->getPost("album");
                 if(!($album > 0 && Albums::findFirst(array("id=?0 and user=?1", "bind" => array($album, $this->user->id)))))
@@ -54,10 +59,35 @@ class UploadController extends ControllerBase
                 }
 
             }
+            else
+            {
+                $error = "Wrong type";
+            }
 
         }
+        else
+        {
+            $error = "No post or file";
+        }
 
-        $this->response->redirect("show/".$imgcode);
+        if($error)
+        {
+            echo json_encode(array(
+                "status" => "error",
+                "message" => $error
+            ));
+        }
+        else
+        {
+            echo json_encode(array(
+                "status" => "success",
+                "code" => $imgcode,
+                "c_path" => "/" . $folders["c"] . $filename,
+                "filesize" => filesize('../public/'. $folders["b"] . $filename)
+            ));
+        }
+
+        exit;
 
     }
 

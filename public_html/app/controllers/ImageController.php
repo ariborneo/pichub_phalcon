@@ -13,9 +13,12 @@ class ImageController extends ControllerBase
             $album = Albums::findFirst($img->album);
             if($album) $album = $album->toArray();
 
+            $user = Users::findFirst(array("id = ".$img->user, "cache" => array("key" => "user_".$img->user)));
+
             $this->view->setVar("image", array(
                 "code" => $code,
                 "user" => $img->user,
+                "username" => $user->name,
                 "path" => "/pic_b/".Helpers::getdirbydate($img->time).$code.".".$img->ext,
                 "opis" => $img->opis,
                 "time" => Helpers::showdatetime($img->time),
@@ -34,6 +37,8 @@ class ImageController extends ControllerBase
                 "order" => "id DESC",
                 "cache" => array("key" => "comments_".$img->id)
             )));
+
+            $this->view->setVar("title", "Изображение");
         }
         else
         {

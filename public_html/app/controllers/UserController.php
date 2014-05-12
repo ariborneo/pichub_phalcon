@@ -32,6 +32,7 @@ class UserController extends ControllerBase
 
             $albums = Albums::find("user=".$uid);
             $this->view->setVar("albums", $albums->toArray());
+            $this->view->setVar("title", $name);
         }
         else
         {
@@ -75,6 +76,7 @@ class UserController extends ControllerBase
             );
         }
         $this->view->setVar("images", $view_images);
+        $this->view->setVar("title", "Альбом " . $album->name);
     }
 
 }

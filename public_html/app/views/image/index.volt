@@ -1,13 +1,21 @@
-<img src="{{ image["path"] }}"><br>
+<img src="{{ image["path"] }}" style="max-height: 600px;"><br>
 Описание: {{ image["opis"] }}<br>
 Дата добавления: {{ image["time"] }}<br>
 Просмотров: {{ image["views"] }}<br>
+Пользователь:
+    {% if image["user"] > 0 %}
+        <a href="/user/{{ image["username"] }}">{{ image["username"] }}</a>
+    {% else %}
+        -
+    {% endif %}
+<br>
 
 {% if image["album"]["id"] > 0 %}
-    Альбом: <a href="/album/{{ image["album"]["id"] }}">{{ image["album"]["name"] }}</a><br>
+    Альбом: <a href="/album/{{ image["album"]["id"] }}">{{ image["album"]["name"] }}</a>
 {% else %}
-    Альбом: -<br>
+    Альбом: -
 {% endif %}
+<br>
 
 Лайков: {{ image["likes"] }}&nbsp;
 {% if user.id > 0 %}

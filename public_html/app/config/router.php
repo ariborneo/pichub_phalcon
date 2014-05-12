@@ -77,13 +77,15 @@ $router->add("/user/(.*)",
 $router->add("/top",
     array(
         "controller" => "charts",
-        "action"     => "top",
+        "action"     => "index",
+        "name"       => "top"
     )
 );
 $router->add("/last",
     array(
         "controller" => "charts",
-        "action"     => "last",
+        "action"     => "index",
+        "name"       => "last"
     )
 );
 $router->add("/create_album",

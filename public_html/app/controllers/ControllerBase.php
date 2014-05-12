@@ -7,6 +7,8 @@ class ControllerBase extends \Phalcon\Mvc\Controller
 
     public $db;
 
+    public $t;
+
     protected function _getTranslation()
     {
         $language = $this->request->getBestLanguage();
@@ -50,7 +52,7 @@ class ControllerBase extends \Phalcon\Mvc\Controller
         $user_hash = $this->cookies->get("user_hash")->getValue();
         if($user_id > 0 && strlen($user_hash) == 64)
         {
-            $user = Users::findFirst(array($user_id, "cache" => array("key" => "user_".$user_id, "lifetime" => 300)));
+            $user = Users::findFirst(array("id = ".$user_id, "cache" => array("key" => "user_".$user_id, "lifetime" => 300)));
             if($user)
             {
                 $token = Tokens::findFirst(array(
@@ -68,6 +70,11 @@ class ControllerBase extends \Phalcon\Mvc\Controller
                         $token->update();
                     }
                     $this->user = $user;
+                }
+                else
+                {
+                    $this->cookies->delete("user_id");
+                    $this->cookies->delete("user_hash");
                 }
             }
         }
@@ -90,8 +97,10 @@ class ControllerBase extends \Phalcon\Mvc\Controller
 
         $this->check_bans();
 
+        $this->t = $this->_getTranslation();
+
         $this->view->setVar("user", $this->user);
-        $this->view->setVar("t", $this->_getTranslation());
+        $this->view->setVar("t", $this->t);
 
     }
 

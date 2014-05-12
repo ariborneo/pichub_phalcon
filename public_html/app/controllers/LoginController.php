@@ -1,5 +1,9 @@
 <?php
 
+use Phalcon\Validation\Validator\PresenceOf,
+    Phalcon\Validation\Validator\Email,
+    Phalcon\Validation\Validator\StringLength;
+
 class LoginController extends ControllerBase
 {
 
@@ -52,7 +56,7 @@ class LoginController extends ControllerBase
         }
         $this->cookies->delete("user_id");
         $this->cookies->delete("user_hash");
-        $this->response->redirect();
+        $this->response->redirect($this->request->getHTTPReferer());
     }
 
     public function registrationAction()
@@ -60,24 +64,68 @@ class LoginController extends ControllerBase
         if($this->request->isPost())
         {
 
-            $name = $this->request->getPost("name");
-            $email = $this->request->getPost("email");
-            $password = $this->request->getPost("password");
+            $validation = new Phalcon\Validation();
+            $validation
+                ->add('name', new PresenceOf(array(
+                    'message' => 'The name is required'
+                )))
+                ->add('name', new StringLength(array(
+                    'minimumMessage' => 'The name is too short',
+                    'min' => 6
+                )))
+                ->add('email', new PresenceOf(array(
+                    'message' => 'The e-mail is required'
+                )))
+                ->add('email', new Email(array(
+                    'message' => 'The e-mail is not valid'
+                )))
+                ->add('password', new PresenceOf(array(
+                    'message' => 'The password is required'
+                )))
+                ->add('password', new StringLength(array(
+                    'minimumMessage' => 'The password is too short',
+                    'min' => 6
+                )));
+            $messages = $validation->validate($_POST);
+            if (count($messages)) {
+                $array = array();
+                foreach ($messages as $message) {
+                    $array[] = $message->getMessage();
+                }
+                echo json_encode($array);exit;
+            }
+            else
+            {
 
-            $user = new Users();
-            $user->save(array(
-                "name" => $name,
-                "email" => $email,
-                "password" => Helpers::sha256($password),
-                "time" => time(),
-                "ban" => 0,
-                "role" => 0,
-                "active" => 1
-            ));
+                $name = $this->request->getPost("name");
+                $email = $this->request->getPost("email");
+                $password = $this->request->getPost("password");
 
-            $this->login_complete($user);
+                $messages = array();
+                if(Users::count("name = '".$name."'") > 0){
+                    $messages[] = "This name is used";
+                }
+                elseif(Users::count("email = '".$email."'") > 0)
+                {
+                    $messages[] = "This email is used";
+                }
+                if(count($messages)){ echo json_encode($messages);exit; }
 
-            $this->response->redirect();
+                $user = new Users();
+                $user->save(array(
+                    "name" => $name,
+                    "email" => $email,
+                    "password" => Helpers::sha256($password),
+                    "time" => time(),
+                    "ban" => 0,
+                    "role" => 0,
+                    "active" => 1
+                ));
+
+                $this->login_complete($user);
+
+                $this->response->redirect();
+            }
         }
     }
 

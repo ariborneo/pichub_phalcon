@@ -12,7 +12,7 @@ class Helpers extends CustomModel
     }
 
     static function create_folder($type){
-        $public_root = "../";
+        $public_root = "../public/";
         $y = date("y");
         $m = date("m");
         $d = date("d");
