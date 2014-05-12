@@ -102,13 +102,8 @@ class LoginController extends ControllerBase
                 $password = $this->request->getPost("password");
 
                 $messages = array();
-                if(Users::count("name = '".$name."'") > 0){
-                    $messages[] = "This name is used";
-                }
-                elseif(Users::count("email = '".$email."'") > 0)
-                {
-                    $messages[] = "This email is used";
-                }
+                if(Users::count("name = '".$name."'") > 0) $messages[] = "This name is used";
+                if(Users::count("email = '".$email."'") > 0) $messages[] = "This email is used";
                 if(count($messages)){ echo json_encode($messages);exit; }
 
                 $user = new Users();
