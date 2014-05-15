@@ -13,7 +13,10 @@ class UploadController extends ControllerBase
 
             $file = current($this->request->getUploadedFiles());
 
-            if(Helpers::check_file_type($file->getType())){
+            if($file->getSize() / 1000000 > 10) $error = "Wrong size";
+            elseif(!Helpers::check_file_type($file->getType())) $error = "Wrong type";
+
+            if(!$error){
 
                 $folders = Helpers::create_folders();
 
@@ -58,10 +61,6 @@ class UploadController extends ControllerBase
                     $album->increase("count");
                 }
 
-            }
-            else
-            {
-                $error = "Wrong type";
             }
 
         }

@@ -29,7 +29,8 @@ class UserController extends ControllerBase
 
             $this->view->setVar("user", array(
                 "login" => $name,
-                "time" => Helpers::showdatetime($user->readAttribute("time"))
+                "time" => Helpers::showdatetime($user->readAttribute("time")),
+                "vk_id" => $user->vk_id
             ));
 
             $albums = Albums::find("user=".$uid);

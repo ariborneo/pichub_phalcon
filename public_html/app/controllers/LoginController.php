@@ -1,9 +1,5 @@
 <?php
 
-use Phalcon\Validation\Validator\PresenceOf,
-    Phalcon\Validation\Validator\Email,
-    Phalcon\Validation\Validator\StringLength;
-
 class LoginController extends ControllerBase
 {
 
@@ -21,8 +17,9 @@ class LoginController extends ControllerBase
             {
                 $this->login_complete($user);
             }
+            $this->response->redirect();
         }
-        $this->response->redirect();
+        $this->view->setRenderLevel(\Phalcon\Mvc\View::LEVEL_ACTION_VIEW);
     }
 
     protected function login_complete($user)
@@ -64,35 +61,21 @@ class LoginController extends ControllerBase
         if($this->request->isPost())
         {
 
-            $validation = new Phalcon\Validation();
+            $validation = new CustomValidation();
             $validation
-                ->add('name', new PresenceOf(array(
-                    'message' => 'The name is required'
-                )))
-                ->add('name', new StringLength(array(
-                    'minimumMessage' => 'The name is too short',
-                    'min' => 6
-                )))
-                ->add('email', new PresenceOf(array(
-                    'message' => 'The e-mail is required'
-                )))
-                ->add('email', new Email(array(
-                    'message' => 'The e-mail is not valid'
-                )))
-                ->add('password', new PresenceOf(array(
-                    'message' => 'The password is required'
-                )))
-                ->add('password', new StringLength(array(
-                    'minimumMessage' => 'The password is too short',
-                    'min' => 6
-                )));
-            $messages = $validation->validate($_POST);
+                ->rule("name", "not_empty")
+                ->rule("name", "min_length", array(3))
+                ->rule("name", "unique_username")
+                ->rule("email", "not_empty")
+                ->rule("email", "email")
+                ->rule("email", "unique_email")
+                ->rule("password", "not_empty")
+                ->rule("password", "min_length", array(6))
+                ->rule("captcha", "identical", array($this->session->get("captcha")));
+            $messages = $validation->_validate($_POST);
+
             if (count($messages)) {
-                $array = array();
-                foreach ($messages as $message) {
-                    $array[] = $message->getMessage();
-                }
-                echo json_encode($array);exit;
+                echo json_encode($messages);exit;
             }
             else
             {
@@ -100,11 +83,6 @@ class LoginController extends ControllerBase
                 $name = $this->request->getPost("name");
                 $email = $this->request->getPost("email");
                 $password = $this->request->getPost("password");
-
-                $messages = array();
-                if(Users::count("name = '".$name."'") > 0) $messages[] = "This name is used";
-                if(Users::count("email = '".$email."'") > 0) $messages[] = "This email is used";
-                if(count($messages)){ echo json_encode($messages);exit; }
 
                 $user = new Users();
                 $user->save(array(
@@ -121,6 +99,70 @@ class LoginController extends ControllerBase
 
                 $this->response->redirect();
             }
+        }
+        elseif($this->user->id > 0)
+        {
+            $this->response->redirect();
+        }
+    }
+
+    public function login_vkAction()
+    {
+        $error = "";
+        if($this->request->has("code")){
+
+            $conf = array(
+                "vk_app_id" => "4357987",
+                "vk_app_secret" => "viCuTUhk7lJ1ujmfXY2p",
+                "redirect" => "http://pichub.local/login_vk"
+            );
+
+            $code = $this->request->get("code");
+            $json = json_decode(file_get_contents("https://oauth.vk.com/access_token?client_id=".$conf['vk_app_id']."&client_secret=".$conf['vk_app_secret']."&code=".$code."&redirect_uri=".$conf["redirect"]));
+
+            $uid = $json->user_id;
+            $token = $json->access_token;
+
+            $user = Users::findFirst("vk_id=".$uid);
+
+            if(isset($token) && !$user){
+                if($this->user->id == 0)
+                {
+                    $name = "id" . $uid;
+                    $user = new Users();
+                    $user->save(array(
+                        "name" => $name,
+                        "time" => time(),
+                        "ban" => 0,
+                        "role" => 0,
+                        "active" => 1,
+                        "vk_id" => $uid
+                    ));
+                    $this->response->redirect("user/".$name);
+                }
+                else
+                {
+                    $this->user->vk_id = $uid;
+                    $this->user->update();
+                    $this->modelsCache->delete("user_" . $this->user->id);
+                    $this->modelsCache->delete("user_" . $this->user->name);
+                    $this->response->redirect("user/".$this->user->name);
+                }
+            }else{
+                $this->login_complete($user);
+                $this->response->redirect("user/".$user->name);
+            }
+        }else{
+            $error = "No code";
+        }
+
+        if($error)
+        {
+            echo json_encode(array(
+                "status" => "error",
+                "message" => $error
+            ));
+            exit;
         }
     }
 

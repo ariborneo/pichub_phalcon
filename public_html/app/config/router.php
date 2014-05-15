@@ -6,6 +6,12 @@ $router->add("/",
         "action"     => "index",
     )
 );
+$router->add("/captcha",
+    array(
+        "controller" => "index",
+        "action"     => "captcha",
+    )
+);
 $router->add("/login",
     array(
         "controller" => "login",
@@ -22,6 +28,12 @@ $router->add("/registration",
     array(
         "controller" => "login",
         "action"     => "registration",
+    )
+);
+$router->add("/login_vk",
+    array(
+        "controller" => "login",
+        "action"     => "login_vk",
     )
 );
 $router->add("/show/([a-z0-9]+)([/]?)",

@@ -53,13 +53,11 @@ $di->set('cookies', function () {
     return $cookies;
 });
 
-/*
 $di->set('session', function () {
     $session = new SessionAdapter();
     $session->start();
     return $session;
 });
-*/
 
 $di->set('crypt', function() {
     $crypt = new Phalcon\Crypt();
