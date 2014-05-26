@@ -9,7 +9,8 @@ use Phalcon\Validation,
     Phalcon\Validation\Validator\Identical,
     Phalcon\Validation\Validator\Regex,
     Phalcon\Validation\Validator\InclusionIn,
-    Phalcon\Validation\Validator\ExclusionIn;
+    Phalcon\Validation\Validator\ExclusionIn,
+    Phalcon\Validation\Validator\Url as UrlValidator;
 
 class CustomValidation extends Validation
 {
@@ -97,6 +98,12 @@ class CustomValidation extends Validation
                 'message' => 'Email exist'
             )));
         }
+        elseif($rule == "url")
+        {
+            $this->add($field, new UrlValidator(array(
+                'message' => $field . ' is not valid url'
+            )));
+        }
         return $this;
     }
 
@@ -104,8 +111,13 @@ class CustomValidation extends Validation
     {
         $messages = $this->validate($values);
         $array = array();
-        foreach ($messages as $message) {
-            $array[] = $message->getMessage();
+        foreach ($messages as $message)
+        {
+            if(!isset($array[$message->getField()]))
+            {
+                $array[$message->getField()] = array();
+            }
+            $array[$message->getField()][] = $message->getMessage();
         }
         return $array;
     }

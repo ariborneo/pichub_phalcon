@@ -3,13 +3,7 @@
 class ControllerBase extends \Phalcon\Mvc\Controller
 {
 
-    public $user;
-
-    public $db;
-
-    public $t;
-
-    public $config;
+    public $user, $db, $t, $config, $domain;
 
     protected function _getTranslation()
     {
@@ -30,21 +24,31 @@ class ControllerBase extends \Phalcon\Mvc\Controller
 
     protected function delete_expired()
     {
-        $this->db->query("delete from tokens where expire < ".time());
+        if (mt_rand(1, 100) === 1)
+        {
+            $this->db->query("delete from tokens where expire < ".time());
+        }
     }
 
     protected function check_bans()
     {
         $ip = ip2long($this->request->getClientAddress());
-        if(Bans::findFirst(array("ip='".$ip."'", "cache" => array("key" => "ban-".$ip))))
+        $ban = false;
+        $ipban = Bans::findFirst(array("ip='".$ip."'", "cache" => array("key" => "ban-".$ip)));
+        if($ipban)
         {
-            $this->view->disable();
-            echo "Baned IP";
+            $ban = "ip";
+            $this->view->setVar("ip", $this->request->getClientAddress());
+            $this->view->setVar("reason", $ipban->reason);
         }
         elseif($this->user->ban == 1)
         {
-            $this->view->disable();
-            echo "Baned USER";
+            $ban = "user";
+        }
+        if($ban)
+        {
+            $this->view->pick("index/ban");
+            $this->view->setVar("type", $ban);
         }
     }
 
@@ -82,27 +86,47 @@ class ControllerBase extends \Phalcon\Mvc\Controller
         }
     }
 
+    protected function echo_response($array)
+    {
+        echo json_encode($array);
+        exit;
+    }
+
+    protected function goBack()
+    {
+        $this->response->redirect($this->request->getHTTPReferer());
+    }
+
+    protected function error404()
+    {
+        $this->dispatcher->forward(array(
+            'controller' => 'index',
+            'action' => 'error404'
+        ));
+    }
+
     public function initialize()
     {
+
+        $this->domain = $this->request->getHttpHost();
 
         $this->db = $this->getDi()->getShared('db');
 
         $this->config = Config::find(array("cache" => array("key" => "config")));
 
+        //$this->user = new Auth();
+
         $this->user = new Users();
         $this->user->setNulls();
-
         $this->auth();
 
-        if (mt_rand(1, 100) === 1)
-        {
-            $this->delete_expired();
-        }
+        $this->delete_expired();
 
         $this->check_bans();
 
         $this->t = $this->_getTranslation();
 
+        $this->view->setVar("domain", $this->domain);
         $this->view->setVar("user", $this->user);
         $this->view->setVar("t", $this->t);
 

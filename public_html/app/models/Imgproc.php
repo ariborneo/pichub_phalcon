@@ -19,4 +19,9 @@ class Imgproc extends Phalcon\Image\Adapter\GD
         $this->resize($size);
     }
 
+    public function from_string($data)
+    {
+        $this->image = imagecreatefromstring($data);
+    }
+
 }

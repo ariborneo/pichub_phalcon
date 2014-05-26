@@ -1,7 +1,5 @@
 <?php
 
-use Phalcon\Validation\Validator\PresenceOf;
-
 class UserController extends ControllerBase
 {
 
@@ -39,8 +37,7 @@ class UserController extends ControllerBase
         }
         else
         {
-            $this->view->disable();
-            echo "Пользователя не существует";
+            $this->error404();
         }
     }
 
@@ -48,18 +45,12 @@ class UserController extends ControllerBase
     {
         if($this->request->isPost() && $this->user->id > 0)
         {
-            $validation = new Phalcon\Validation();
-            $validation
-                ->add('name', new PresenceOf(array(
-                    'message' => 'The name is required'
-                )));
-            $messages = $validation->validate($_POST);
-            if (count($messages)) {
-                $array = array();
-                foreach ($messages as $message) {
-                    $array[] = $message->getMessage();
-                }
-                echo json_encode($array);exit;
+            $validation = new CustomValidation();
+            $validation->rule("name", "not_empty");
+            $messages = $validation->_validate($_POST);
+            if (count($messages))
+            {
+                $this->echo_response($messages);
             }
             else
             {

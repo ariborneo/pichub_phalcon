@@ -25,9 +25,17 @@ class IndexController extends ControllerBase
                 ->rule("text", "min_length", array(20))
                 ->rule("captcha", "identical", array($this->session->get("captcha")));
             $messages = $validation->_validate($_POST);
-
-            if (count($messages)) {
-                echo json_encode($messages);exit;
+            if (count($messages))
+            {
+                if(!$this->request->isAjax())
+                {
+                    $this->response->redirect();
+                }
+                $this->echo_response(array(
+                    "status" => "error",
+                    "action" => $this->dispatcher->getActionName(),
+                    "messages" => $messages
+                ));
             }
             else
             {
@@ -39,12 +47,19 @@ class IndexController extends ControllerBase
                     "text" => $this->request->getPost("text"),
                     "time" => time(),
                     "user" => $this->user->id,
-                    "ip" =>ip2long($this->request->getClientAddress())
+                    "ip" => ip2long($this->request->getClientAddress())
                 ));
-                $this->response->redirect();
+                if(!$this->request->isAjax())
+                {
+                    $this->response->redirect();
+                }
+                $this->echo_response(array(
+                    "status" => "success",
+                    "action" => $this->dispatcher->getActionName()
+                ));
             }
         }
-        $this->view->setRenderLevel(\Phalcon\Mvc\View::LEVEL_ACTION_VIEW);
+        //$this->view->setRenderLevel(\Phalcon\Mvc\View::LEVEL_ACTION_VIEW);
     }
 
     public function captchaAction()

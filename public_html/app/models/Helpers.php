@@ -1,6 +1,6 @@
 <?php
 
-class Helpers extends CustomModel
+class Helpers
 {
 
     static function check_file_type($type){

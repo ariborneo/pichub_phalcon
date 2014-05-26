@@ -60,7 +60,6 @@ class LoginController extends ControllerBase
     {
         if($this->request->isPost())
         {
-
             $validation = new CustomValidation();
             $validation
                 ->rule("name", "not_empty")
@@ -73,17 +72,15 @@ class LoginController extends ControllerBase
                 ->rule("password", "min_length", array(6))
                 ->rule("captcha", "identical", array($this->session->get("captcha")));
             $messages = $validation->_validate($_POST);
-
-            if (count($messages)) {
-                echo json_encode($messages);exit;
+            if (count($messages))
+            {
+                $this->echo_response($messages);
             }
             else
             {
-
                 $name = $this->request->getPost("name");
                 $email = $this->request->getPost("email");
                 $password = $this->request->getPost("password");
-
                 $user = new Users();
                 $user->save(array(
                     "name" => $name,
@@ -94,9 +91,7 @@ class LoginController extends ControllerBase
                     "role" => 0,
                     "active" => 1
                 ));
-
                 $this->login_complete($user);
-
                 $this->response->redirect();
             }
         }
@@ -104,12 +99,14 @@ class LoginController extends ControllerBase
         {
             $this->response->redirect();
         }
+        $this->view->setRenderLevel(\Phalcon\Mvc\View::LEVEL_ACTION_VIEW);
     }
 
     public function login_vkAction()
     {
-        $error = "";
-        if($this->request->has("code")){
+        $error = false;
+        if($this->request->has("code"))
+        {
 
             $conf = array(
                 "vk_app_id" => "4357987",
@@ -125,7 +122,8 @@ class LoginController extends ControllerBase
 
             $user = Users::findFirst("vk_id=".$uid);
 
-            if(isset($token) && !$user){
+            if(isset($token) && !$user)
+            {
                 if($this->user->id == 0)
                 {
                     $name = "id" . $uid;
@@ -148,21 +146,24 @@ class LoginController extends ControllerBase
                     $this->modelsCache->delete("user_" . $this->user->name);
                     $this->response->redirect("user/".$this->user->name);
                 }
-            }else{
+            }
+            else
+            {
                 $this->login_complete($user);
                 $this->response->redirect("user/".$user->name);
             }
-        }else{
+        }
+        else
+        {
             $error = "No code";
         }
 
         if($error)
         {
-            echo json_encode(array(
+            $this->echo_response(array(
                 "status" => "error",
                 "message" => $error
             ));
-            exit;
         }
     }
 

@@ -1,14 +1,12 @@
 <?php
 
-use Phalcon\Validation\Validator\PresenceOf,
-    Phalcon\Validation\Validator\StringLength;
-
 class ImageController extends ControllerBase
 {
 
     public function indexAction()
     {
         $code = $this->dispatcher->getParam("code");
+        $editcode = $this->dispatcher->getParam("editcode");
         $img = Images::findFirst("code='".$code."'");
         if($img)
         {
@@ -21,8 +19,8 @@ class ImageController extends ControllerBase
             $this->view->setVar("image", array(
                 "code" => $code,
                 "user" => $img->user,
-                "username" => $user->name,
-                "path" => "/pic_b/".Helpers::getdirbydate($img->time).$code.".".$img->ext,
+                "username" => $user ? $user->name : 0,
+                "path" => Helpers::getdirbydate($img->time).$code.".".$img->ext,
                 "opis" => $img->opis,
                 "time" => Helpers::showdatetime($img->time),
                 "views" => $img->views,
@@ -32,51 +30,76 @@ class ImageController extends ControllerBase
                         "image = ?0 and user = ?1",
                         "bind" => array($img->id, $this->user->id)
                 )),
-                "comments" => $img->comments
+                "comments" => $img->comments,
+                "editcode" => $img->editcode
             ));
 
-            $this->view->setVar("comments", Comments::find(array(
+            $comments = Comments::find(array(
                 "image=".$img->id,
                 "order" => "id DESC",
                 "cache" => array("key" => "comments_".$img->id)
-            )));
+            ))->toArray();
+            foreach($comments as $key => $comment)
+            {
+                $comments[$key]["time"] = Helpers::showdatetime($comment["time"]);
+                $comments[$key]["user"] = Users::findFirst(array("id=".$comment["user"], "cache" => array("key" => "user_".$comment["user"])));
+            }
+            $comments = json_decode(json_encode($comments), FALSE);
+
+            $this->view->setVar("comments", $comments);
 
             $this->view->setVar("title", "Изображение");
         }
         else
         {
-            $this->response->redirect();
+            $this->error404();
         }
     }
 
     public function likeAction()
     {
-        $code = $this->dispatcher->getParam("code");
         $uid = $this->user->id;
-        $image = Images::findFirst("code='".$code."'");
-        if(!Likes::check($image->id, $uid))
+        if($uid > 0)
         {
-            Likes::add($image->id, $uid);
-            $image->increase("likes");
+            $code = $this->dispatcher->getParam("code");
+            $image = Images::findFirst("code='".$code."'");
+            $like = Likes::findFirst(array(
+                "image = ?0 and user = ?1",
+                "bind" => array($image->id, $uid)
+            ));
+            if(!$like)
+            {
+                Likes::add($image->id, $uid);
+                $image->increase("likes");
+                $action = "like";
+            }
+            else
+            {
+                $like->delete();
+                $image->decrease("likes");
+                $action = "dislike";
+            }
+            if(!$this->request->isAjax())
+            {
+                $this->goBack();
+            }
+            $this->echo_response(array(
+                "status" => "success",
+                "action" => $action,
+                "likes" => $image->likes
+            ));
         }
-        $this->response->redirect("show/".$code);
-    }
-
-    public function dislikeAction()
-    {
-        $code = $this->dispatcher->getParam("code");
-        $uid = $this->user->id;
-        $image = Images::findFirst("code='".$code."'");
-        $like = Likes::findFirst(array(
-            "image = ?0 and user = ?1",
-            "bind" => array($image->id, $uid)
-        ));
-        if($like)
+        else
         {
-            $like->delete();
-            $image->decrease("likes");
+            if(!$this->request->isAjax())
+            {
+                $this->goBack();
+            }
+            $this->echo_response(array(
+                "status" => "error",
+                "message" => "Not auth"
+            ));
         }
-        $this->response->redirect("show/".$code);
     }
 
     public function comment_addAction()
@@ -94,23 +117,74 @@ class ImageController extends ControllerBase
                 "time" => time()
             ));
             $image->increase("comments");
+            $this->modelsCache->delete("comments_" . $image->id);
+            if(!$this->request->isAjax())
+            {
+                $this->goBack();
+            }
+            $this->echo_response(array(
+                "status" => "success",
+                "action" => $this->dispatcher->getActionName(),
+                "info" => array(
+                    "comments" => $image->comments,
+                    "comment" => array(
+                        "id" => $comment->id,
+                        "time" => Helpers::showdatetime($comment->time)
+                    ),
+                    "user" => array(
+                        "id" => $uid,
+                        "name" => $this->user->name
+                    )
+                )
+            ));
         }
-        $this->response->redirect("show/".$code);
+        else
+        {
+            if(!$this->request->isAjax())
+            {
+                $this->goBack();
+            }
+            $this->echo_response(array(
+                "status" => "error",
+                "message" => "something wrong"
+            ));
+        }
     }
 
     public function comment_delAction()
     {
         $uid = $this->user->id;
-        $code = $this->dispatcher->getParam("code");
         $id = $this->dispatcher->getParam("id");
         $comment = Comments::findFirst($id);
-        if($uid == $comment->user)
+        if($comment && $uid == $comment->user)
         {
             $image = Images::findFirst($comment->image);
             $image->decrease("comments");
             $comment->delete();
+            $this->modelsCache->delete("comments_" . $image->id);
+            if(!$this->request->isAjax())
+            {
+                $this->goBack();
+            }
+            $this->echo_response(array(
+                "status" => "success",
+                "action" => $this->dispatcher->getActionName(),
+                "info" => array(
+                    "comments" => $image->comments
+                )
+            ));
         }
-        $this->response->redirect("show/".$code);
+        else
+        {
+            if(!$this->request->isAjax())
+            {
+                $this->goBack();
+            }
+            $this->echo_response(array(
+                "status" => "error",
+                "message" => "something wrong"
+            ));
+        }
     }
 
     public function del_requestAction()
@@ -121,22 +195,18 @@ class ImageController extends ControllerBase
             $image = Images::findFirst("code='".$code."'");
             if($image && $image->user != $this->user->id)
             {
-                $validation = new Phalcon\Validation();
+                $validation = new CustomValidation();
                 $validation
-                    ->add('text', new PresenceOf(array(
-                        'message' => 'The text is required'
-                    )))
-                    ->add('text', new StringLength(array(
-                        'minimumMessage' => 'The text is too short',
-                        'min' => 20
-                    )));
-                $messages = $validation->validate($_POST);
-                if (count($messages)) {
-                    $array = array();
-                    foreach ($messages as $message) {
-                        $array[] = $message->getMessage();
-                    }
-                    echo json_encode($array);exit;
+                    ->rule("text", "not_empty")
+                    ->rule("text", "min_length", array(20));
+                $messages = $validation->_validate($_POST);
+                if(count($messages) > 0)
+                {
+                    $this->echo_response(array(
+                        "status" => "error",
+                        "action" => $this->dispatcher->getActionName(),
+                        "messages" => $messages
+                    ));
                 }
                 else
                 {
@@ -148,7 +218,10 @@ class ImageController extends ControllerBase
                         "ip" => ip2long($this->request->getClientAddress()),
                         "time" => time()
                     ));
-                    $this->response->redirect();
+                    $this->echo_response(array(
+                        "status" => "success",
+                        "action" => $this->dispatcher->getActionName()
+                    ));
                 }
             }
         }
