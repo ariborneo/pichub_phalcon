@@ -9,12 +9,23 @@ return new \Phalcon\Config(array(
         'dbname'      => 'pichub',
     ),
     'application' => array(
-        'controllersDir' => __DIR__ . '/../../app/controllers/',
-        'modelsDir'      => __DIR__ . '/../../app/models/',
-        'viewsDir'       => __DIR__ . '/../../app/views/',
-        'pluginsDir'     => __DIR__ . '/../../app/plugins/',
-        'libraryDir'     => __DIR__ . '/../../app/library/',
-        'cacheDir'       => __DIR__ . '/../../app/cache/',
+        'controllersDir' => __DIR__ . '/../controllers/',
+        'modelsDir'      => __DIR__ . '/../models/',
+        'viewsDir'       => __DIR__ . '/../views/',
+        'pluginsDir'     => __DIR__ . '/../plugins/',
+        'libraryDir'     => __DIR__ . '/../library/',
+        'cacheDir'       => __DIR__ . '/../cache/',
         'baseUri'        => '/',
+    ),
+    "mail" => array(
+        "fromName" => "PicHub.ru",
+        "fromEmail" => "pichub@yandex.ru",
+        "smtp" => array(
+            "server" => "smtp.yandex.ru",
+            "port" => "465",
+            "security" => "ssl",
+            "username" => "pichub@yandex.ru",
+            "password" => "19955875aa",
+        )
     )
 ));

@@ -16,7 +16,7 @@
         <link rel="stylesheet" href="/css/fallr/jquery-fallr-1.3.css">
         <script type="text/javascript" src="/js/fallr/jquery.easing.1.3.js"></script>
         <script type="text/javascript" src="/js/fallr/highlight.pack.js"></script>
-        <script src="/js/fallr/jquery-fallr-1.3.pack.js"></script>
+        <script src="/js/fallr/jquery-fallr-1.3.1.js"></script>
 
     </head>
 	<body>

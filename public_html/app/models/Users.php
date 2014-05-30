@@ -3,13 +3,14 @@
 class Users extends CustomModel
 {
 
-    public function setNulls()
+    public function afterCreate()
     {
-        $this->assign(array(
-            "id" => 0,
-            "name" => "",
-            "ban" => 0
-        ));
+        $this->getDI()->getMail()->send(
+            array($this->email => $this->name),
+            'Успешная регистарция на PicHub.ru',
+            'reg_success',
+            $this->toArray()
+        );
     }
 
 }

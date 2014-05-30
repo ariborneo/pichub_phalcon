@@ -3,13 +3,7 @@
 class IndexController extends ControllerBase
 {
 
-    public function indexAction()
-    {
-        if($this->user->id > 0)
-        {
-            $this->view->setVar("albums", Albums::find("user=".$this->user->id)->toArray());
-        }
-    }
+    public function indexAction() { }
 
     public function feedbackAction()
     {
@@ -31,7 +25,7 @@ class IndexController extends ControllerBase
                 {
                     $this->response->redirect();
                 }
-                $this->echo_response(array(
+                $this->echo_json(array(
                     "status" => "error",
                     "action" => $this->dispatcher->getActionName(),
                     "messages" => $messages
@@ -53,7 +47,7 @@ class IndexController extends ControllerBase
                 {
                     $this->response->redirect();
                 }
-                $this->echo_response(array(
+                $this->echo_json(array(
                     "status" => "success",
                     "action" => $this->dispatcher->getActionName()
                 ));

@@ -4,13 +4,6 @@ id vk:
 {% if user["vk_id"] is defined %}
     <a href="http://vk.com/id{{ user["vk_id"] }}" target="_blank">{{ user["vk_id"] }}</a>
 {% else %}
-    <script>
-        function vk_login(){
-            var vk_app_id = 4357987;
-            var redirect_uri = 'http://pichub.local/login_vk';
-            window.location.href = "https://oauth.vk.com/authorize?client_id="+vk_app_id+"&scope=offline&redirect_uri="+redirect_uri+"&display=page&response_type=code";
-        }
-    </script>
     <a href='#' onclick="vk_login()">VK</a>
 {% endif %}
 <br><br>
@@ -24,5 +17,5 @@ id vk:
 
 <br>Изображения:<br>
 {% for image in images %}
-    <a href="/show/{{ image["code"] }}" target="_blank"><img src="{{ image["path"] }}"></a>&nbsp;
+    <a href="/show/{{ image["code"] }}" target="_blank"><img src="/pic_c/{{ image["path"] }}"></a>&nbsp;
 {% endfor %}

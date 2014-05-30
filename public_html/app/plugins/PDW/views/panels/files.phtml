@@ -1,0 +1,32 @@
+<?php
+$files = array(
+    "/app/plugins/Auth.php"
+);
+?>
+<div id='pdw-panel-files' class='pdw-panel files'>
+    <div class='title'>
+        <h2>Included Files <a class='pdw-panel-close'>&times;</a></h2>
+    </div>
+    <div class='panel-content'>
+        <table class='pdw-data-table'>
+            <thead>
+            <tr>
+                <th style="width: 50px">#</th>
+                <th>Path</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php
+            $count = 0;
+            foreach ($files as $file):
+                ++$count;
+                echo "<tr>";
+                echo "<td>" . $count . "</td>";
+                echo "<td>" . $file . "</td>";
+                echo "</tr>";
+            endforeach;
+            ?>
+            </tbody>
+        </table>
+    </div>
+</div>

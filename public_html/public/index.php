@@ -1,8 +1,12 @@
 <?php
 
+define('PHALCONDEBUG', true);
+
 error_reporting(E_ALL);
 
-try {
+//try {
+
+    (new \Phalcon\Debug())->listen(true, true);
 
     /**
      * Read the configuration
@@ -19,6 +23,12 @@ try {
      */
     include __DIR__ . "/../app/config/services.php";
 
+    if (PHALCONDEBUG == true)
+    {
+        $loader->registerNamespaces(array('PDW' => realpath('../app/plugins/PDW')));
+        $debugWidget = new \PDW\DebugWidget($di);
+    }
+
     /**
      * Handle the request
      */
@@ -26,6 +36,8 @@ try {
 
     echo $application->handle()->getContent();
 
+/*
 } catch (\Exception $e) {
     echo $e->getMessage();
 }
+*/

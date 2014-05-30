@@ -2,10 +2,11 @@
 
 $router->add("/", "Index::index");
 $router->add("/captcha", "Index::captcha");
-$router->add("/login", "Login::index");
+$router->add("/login", "Login::login");
 $router->add("/logout", "Login::logout");
 $router->add("/registration", "Login::registration");
 $router->add("/login_vk", "Login::login_vk");
+$router->add("/forgot([/]?){key}", "Login::forgot");
 $router->add("/show/{code}([/]?){editcode}", "Image::index");
 $router->add("/like/{code}", "Image::like");
 $router->add("/comment_add/{code}", "Image::comment_add");

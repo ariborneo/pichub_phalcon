@@ -1,5 +1,5 @@
 <?php
 
-$messages = array(
+return array(
 
 );

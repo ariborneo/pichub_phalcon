@@ -5,10 +5,11 @@ use Phalcon\Mvc\View;
 use Phalcon\Mvc\Url as UrlResolver;
 use Phalcon\Db\Adapter\Pdo\Mysql as DbAdapter;
 use Phalcon\Mvc\View\Engine\Volt as VoltEngine;
-use Phalcon\Mvc\Model\Metadata\Memory as MetaDataAdapter;
 use Phalcon\Session\Adapter\Files as SessionAdapter;
 
 $di = new FactoryDefault();
+
+$di->set('config', $config);
 
 $di->set('url', function () use ($config) {
     $url = new UrlResolver();
@@ -43,8 +44,12 @@ $di->set('db', function () use ($config) {
     ));
 });
 
-$di->set('modelsMetadata', function () {
-    return new MetaDataAdapter();
+$di->set('modelsMetadata', function () use ($config) {
+    return new \Phalcon\Mvc\Model\MetaData\Files(array(
+        'metaDataDir' => $config->application->cacheDir . "metadata/",
+        "lifetime" => 10 * 86400,
+        "prefix" => "metadata"
+    ));
 });
 
 $di->set('cookies', function () {
@@ -89,4 +94,13 @@ $di->set('router', function() {
     $router = new Phalcon\Mvc\Router(false);
     include "router.php";
     return $router;
+});
+
+$di->set('mail', function(){
+    return new Mail();
+});
+
+
+$di->set('user', function(){
+    return new Auth();
 });

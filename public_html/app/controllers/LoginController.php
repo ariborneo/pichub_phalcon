@@ -3,57 +3,42 @@
 class LoginController extends ControllerBase
 {
 
-    public function indexAction()
+    public function loginAction()
     {
         if($this->request->isPost())
         {
             $name = $this->request->getPost("name");
             $password = $this->request->getPost("password");
-            $user = Users::findFirst(array(
-                "name = ?0 and password = ?1",
-                "bind" => array($name, Helpers::sha256($password))
-            ));
-            if($user)
+            $isLogged = $this->user->login($name, $password);
+            if(!$this->request->isAjax())
             {
-                $this->login_complete($user);
+                $this->goBack();
             }
-            $this->response->redirect();
+            if($isLogged)
+            {
+                $this->echo_json(array(
+                    "status" => "success",
+                    "action" => $this->dispatcher->getActionName()
+                ));
+            }
+            else
+            {
+                $this->echo_json(array(
+                    "status" => "error",
+                    "action" => $this->dispatcher->getActionName()
+                ));
+            }
         }
-        $this->view->setRenderLevel(\Phalcon\Mvc\View::LEVEL_ACTION_VIEW);
-    }
-
-    protected function login_complete($user)
-    {
-        $token = new Tokens();
-        $token->save(array(
-            "user" => $user->id,
-            "time" => time(),
-            "ip" => ip2long($this->request->getClientAddress()),
-            "expire" => time() + 30 * 86400,
-            "hash" => Helpers::sha256($user->id . $user->password . $this->request->getUserAgent())
-        ));
-        $this->cookies->set("user_id", $user->id, $token->expire);
-        $this->cookies->set("user_hash", $token->hash, $token->expire);
+        if($this->request->isAjax())
+        {
+            $this->view->setRenderLevel(\Phalcon\Mvc\View::LEVEL_ACTION_VIEW);
+        }
     }
 
     public function logoutAction()
     {
-        $user_id = $this->cookies->get("user_id")->getValue();
-        $user_hash = $this->cookies->get("user_hash")->getValue();
-        if($user_id > 0 && strlen($user_hash) > 0)
-        {
-            $token = Tokens::findFirst(array(
-                "user = ?0 and hash = ?1",
-                "bind" => array($user_id, $user_hash)
-            ));
-            if($token)
-            {
-                $token->delete();
-            }
-        }
-        $this->cookies->delete("user_id");
-        $this->cookies->delete("user_hash");
-        $this->response->redirect($this->request->getHTTPReferer());
+        $this->user->logout();
+        $this->goBack();
     }
 
     public function registrationAction()
@@ -74,7 +59,11 @@ class LoginController extends ControllerBase
             $messages = $validation->_validate($_POST);
             if (count($messages))
             {
-                $this->echo_response($messages);
+                $this->echo_json(array(
+                    "status" => "error",
+                    "action" => $this->dispatcher->getActionName(),
+                    "messages" => $messages
+                ));
             }
             else
             {
@@ -91,15 +80,18 @@ class LoginController extends ControllerBase
                     "role" => 0,
                     "active" => 1
                 ));
-                $this->login_complete($user);
-                $this->response->redirect();
+                $this->user->login_complete($user);
+                $this->goBack();
             }
         }
         elseif($this->user->id > 0)
         {
-            $this->response->redirect();
+            $this->goBack();
         }
-        $this->view->setRenderLevel(\Phalcon\Mvc\View::LEVEL_ACTION_VIEW);
+        if($this->request->isAjax())
+        {
+            $this->view->setRenderLevel(\Phalcon\Mvc\View::LEVEL_ACTION_VIEW);
+        }
     }
 
     public function login_vkAction()
@@ -136,7 +128,7 @@ class LoginController extends ControllerBase
                         "active" => 1,
                         "vk_id" => $uid
                     ));
-                    $this->response->redirect("user/".$name);
+                    $this->goBack();
                 }
                 else
                 {
@@ -149,8 +141,8 @@ class LoginController extends ControllerBase
             }
             else
             {
-                $this->login_complete($user);
-                $this->response->redirect("user/".$user->name);
+                $this->user->login_complete($user);
+                $this->goBack();
             }
         }
         else
@@ -160,10 +152,77 @@ class LoginController extends ControllerBase
 
         if($error)
         {
-            $this->echo_response(array(
+            $this->echo_json(array(
                 "status" => "error",
                 "message" => $error
             ));
+        }
+    }
+
+    public function forgotAction()
+    {
+        $key = $this->dispatcher->getParam("key");
+        if($key)
+        {
+            $forgotKey = ForgotKeys::findFirst("key='".$key."'");
+            if($forgotKey)
+            {
+                $user = Users::findFirst("id='".$forgotKey->user."'");
+                $password = Helpers::generateString(10);
+                $user->password = Helpers::sha256($password);
+                $user->update();
+                $forgotKey->delete();
+                $this->modelsCache->delete("user_".$user->id);
+                $this->mail->send(
+                    array($user->email => $user->name),
+                    'Пароль успешно изменен на PicHub.ru',
+                    'forgot_changed',
+                    array(
+                        "user" => $user->name,
+                        "password" => $password
+                    )
+                );
+                $this->view->pick("login/forgot_changed");
+                $this->view->setVar("user", $user->name);
+                $this->view->setVar("password", $password);
+            }
+            else
+            {
+                $this->response->redirect();
+            }
+        }
+        elseif($this->request->isPost())
+        {
+            $email = $this->request->getPost("email");
+            $user = Users::findFirst("email='".$email."'");
+            if($user)
+            {
+                $forgotKey = ForgotKeys::findFirst("user=".$user->id);
+                $key = Helpers::generateString(50);
+                if($forgotKey)
+                {
+                    $forgotKey->key = $key;
+                    $forgotKey->update();
+                }
+                else
+                {
+                    $forgotKey = new ForgotKeys();
+                    $forgotKey->assign(array(
+                        "user" => $user->id,
+                        "key" => $key
+                    ));
+                    $forgotKey->create();
+                }
+                $this->mail->send(
+                    array($user->email => $user->name),
+                    'Восстановление пароля на PicHub.ru',
+                    'forgot',
+                    array(
+                        "key" => $key,
+                        "domain" => $this->domain
+                    )
+                );
+            }
         }
     }
 

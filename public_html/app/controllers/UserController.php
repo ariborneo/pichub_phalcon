@@ -20,7 +20,7 @@ class UserController extends ControllerBase
             {
                 $view_images[] = array(
                     "code" => $i->code,
-                    "path" => "/pic_c/".Helpers::getdirbydate($i->time).$i->code.".".$i->ext
+                    "path" => Helpers::getdirbydate($i->time).$i->code.".".$i->ext
                 );
             }
             $this->view->setVar("images", $view_images);
@@ -50,7 +50,7 @@ class UserController extends ControllerBase
             $messages = $validation->_validate($_POST);
             if (count($messages))
             {
-                $this->echo_response($messages);
+                $this->echo_json($messages);
             }
             else
             {

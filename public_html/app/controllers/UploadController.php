@@ -104,14 +104,14 @@ class UploadController extends ControllerBase
 
         if($error)
         {
-            $this->echo_response(array(
+            $this->echo_json(array(
                 "status" => "error",
                 "message" => $error
             ));
         }
         else
         {
-            $this->echo_response(array(
+            $this->echo_json(array(
                 "status" => "success",
                 "code" => $imgcode,
                 "c_path" => "/" . $folders["c"] . $filename,

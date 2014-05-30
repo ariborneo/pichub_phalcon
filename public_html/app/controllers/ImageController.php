@@ -10,6 +10,8 @@ class ImageController extends ControllerBase
         $img = Images::findFirst("code='".$code."'");
         if($img)
         {
+            $is_edit = $editcode == $img->editcode ? true : false;
+
             $img->increase("views");
             $album = Albums::findFirst($img->album);
             if($album) $album = $album->toArray();
@@ -31,7 +33,8 @@ class ImageController extends ControllerBase
                         "bind" => array($img->id, $this->user->id)
                 )),
                 "comments" => $img->comments,
-                "editcode" => $img->editcode
+                "editcode" => $img->editcode,
+                "is_edit" => $is_edit
             ));
 
             $comments = Comments::find(array(
@@ -47,7 +50,6 @@ class ImageController extends ControllerBase
             $comments = json_decode(json_encode($comments), FALSE);
 
             $this->view->setVar("comments", $comments);
-
             $this->view->setVar("title", "Изображение");
         }
         else
@@ -83,7 +85,7 @@ class ImageController extends ControllerBase
             {
                 $this->goBack();
             }
-            $this->echo_response(array(
+            $this->echo_json(array(
                 "status" => "success",
                 "action" => $action,
                 "likes" => $image->likes
@@ -95,7 +97,7 @@ class ImageController extends ControllerBase
             {
                 $this->goBack();
             }
-            $this->echo_response(array(
+            $this->echo_json(array(
                 "status" => "error",
                 "message" => "Not auth"
             ));
@@ -122,7 +124,7 @@ class ImageController extends ControllerBase
             {
                 $this->goBack();
             }
-            $this->echo_response(array(
+            $this->echo_json(array(
                 "status" => "success",
                 "action" => $this->dispatcher->getActionName(),
                 "info" => array(
@@ -144,7 +146,7 @@ class ImageController extends ControllerBase
             {
                 $this->goBack();
             }
-            $this->echo_response(array(
+            $this->echo_json(array(
                 "status" => "error",
                 "message" => "something wrong"
             ));
@@ -166,7 +168,7 @@ class ImageController extends ControllerBase
             {
                 $this->goBack();
             }
-            $this->echo_response(array(
+            $this->echo_json(array(
                 "status" => "success",
                 "action" => $this->dispatcher->getActionName(),
                 "info" => array(
@@ -180,7 +182,7 @@ class ImageController extends ControllerBase
             {
                 $this->goBack();
             }
-            $this->echo_response(array(
+            $this->echo_json(array(
                 "status" => "error",
                 "message" => "something wrong"
             ));
@@ -202,7 +204,7 @@ class ImageController extends ControllerBase
                 $messages = $validation->_validate($_POST);
                 if(count($messages) > 0)
                 {
-                    $this->echo_response(array(
+                    $this->echo_json(array(
                         "status" => "error",
                         "action" => $this->dispatcher->getActionName(),
                         "messages" => $messages
@@ -218,7 +220,7 @@ class ImageController extends ControllerBase
                         "ip" => ip2long($this->request->getClientAddress()),
                         "time" => time()
                     ));
-                    $this->echo_response(array(
+                    $this->echo_json(array(
                         "status" => "success",
                         "action" => $this->dispatcher->getActionName()
                     ));

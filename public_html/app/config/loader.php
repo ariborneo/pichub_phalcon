@@ -7,7 +7,7 @@ $loader->registerDirs(
         $config->application->controllersDir,
         $config->application->modelsDir,
         $config->application->pluginsDir,
-        __DIR__ . '/../../app/plugins/Validation/Validator/',
-        __DIR__ . '/../../app/plugins/Validation/'
+        __DIR__ . '/../plugins/Validation/Validator/',
+        __DIR__ . '/../plugins/Validation/'
     )
 )->register();

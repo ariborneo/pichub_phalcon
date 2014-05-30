@@ -27,7 +27,6 @@
         text-shadow: 0 -1px 0 rgb(91,129,17);
         border: none;
         outline: none;
-        display: none;
     }
 
     .button:hover {
@@ -190,12 +189,15 @@
 
 
 
-
+<!--
 <link href='http://fonts.googleapis.com/css?family=Headland+One|Open+Sans:400,300&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" href="/css/avgrund/reset.css">
 <link rel="stylesheet" href="/css/avgrund/style.css">
 <link rel="stylesheet" href="/css/avgrund/avgrund.css">
 <script src="/js/avgrund/jquery.avgrund.js"></script>
+-->
+
+
 <script>
 
     $(document).ready(function(){
@@ -228,35 +230,108 @@
                         + '<tr><td><b>Email:</b></td><td><input type="text" name="email" title="Указывайте верный email, т.к. на него придет ответ"></td></tr>'
                         + '<tr><td><b>Тема:</b></td><td><input type="text" name="subject"></td><td id="theme_result"></td></tr>'
                         + '<tr><td><b>Сообщение:</b></td><td><textarea name="text" rows="5"></textarea></td></tr>'
-                        + '<tr><td><b>Капча:</b></td><td> <input type="button" value="reload" onclick="reload_captcha()"> <img src="/captcha" id="captcha"> <input type="text" name="captcha"></td></tr>'
+                        + '<tr><td><b>Капча:</b></td><td><img src="/captcha" id="captcha"> <input type="text" name="captcha"></td></tr>'
                         + '</table>'
                         + '</form>',
                 buttons : {
                     button1 : {text: 'Отправить', onclick: feedback_send},
-                    button4 : {text: 'Отмена'}
+                    button2 : {text: 'Отмена'}
                 }
+            });
+            return false;
+        });
+        $("#logout").click(function(){
+            var link = $(this);
+            $.fallr('show', {
+                buttons : {
+                    button1 : {text: 'Да', danger: true, onclick: function(){
+                        window.location.href = link.attr("href");
+                    }},
+                    button2 : {text: 'Отмена'}
+                },
+                content : '<p>Точно выйти?</p>',
+                icon    : 'error'
+            });
+            return false;
+        });
+        $("#login").click(function(){
+            var link = $(this);
+            var login = function(){
+                var fallr = $(this);
+                $.post(fallr.children('form').attr('action'), fallr.children('form').serialize(), function(data){
+                    console.log(data);
+                    var obj = JSON.parse(data);
+                    if(obj["status"] == "success")
+                    {
+                        window.location.reload();
+                    }
+                    else if(obj["status"] == "error")
+                    {
+                        $.fallr('shake');
+                    }
+                });
+            };
+            $.fallr('show', {
+                width       : '500px',
+                position    : "center",
+                buttons : {
+                    button1 : {text: 'Да', danger: true, onclick: login},
+                    button2 : {text: 'Отмена'}
+                },
+                content : '<h4>Авторизация</h4>'
+                        + '<form action="' + link.attr("href") + '" method="post">'
+                        + '<table style="border: 0;">'
+                        + '<tr><td width="100px"><b>Логин:</b></td><td><input type="text" name="name"></td></tr>'
+                        + '<tr><td><b>Пароль:</b></td><td><input type="password" name="password"></td></tr>'
+                        + '</table>'
+                        + '</form>'
+                        + '<hr><a href="#" onclick="vk_login()">VK</a>',
+                icon    : 'error'
+            });
+            return false;
+        });
+        $("#registration").click(function(){
+            var link = $(this);
+            var login = function(){
+                var fallr = $(this);
+                $.post(fallr.children('form').attr('action'), fallr.children('form').serialize(), function(data){
+                    console.log(data);
+                    var obj = JSON.parse(data);
+                    if(obj["status"] == "success")
+                    {
+                        window.location.reload();
+                    }
+                    else if(obj["status"] == "error")
+                    {
+                        $.fallr('shake');
+                    }
+                });
+            };
+            $.fallr('show', {
+                width       : '500px',
+                position    : "center",
+                buttons : {
+                    button1 : {text: 'Да', danger: true, onclick: login},
+                    button2 : {text: 'Отмена'}
+                },
+                content : '<h4>Регистрация</h4>'
+                        + '<form action="' + link.attr("href") + '" method="post">'
+                        + '<table style="border: 0;">'
+                        + '<tr><td width="100px"><b>Логин:</b></td><td><input type="text" name="name"></td></tr>'
+                        + '<tr><td><b>Email:</b></td><td><input type="text" name="email"></td></tr>'
+                        + '<tr><td><b>Пароль:</b></td><td><input type="password" name="password"></td></tr>'
+                        + '<tr><td><b>Капча:</b></td><td><img src="/captcha" id="captcha"> <input type="text" name="captcha"></td></tr>'
+                        + '</table>'
+                        + '</form>'
+                        + '<hr><a href="#" onclick="vk_login()">VK</a>',
+                icon    : 'error'
             });
             return false;
         });
     });
 
+    /*
     $(function() {
-        /*
-        $('#feedback').avgrund({
-            height: 500,
-            holderClass: 'custom',
-            showClose: true,
-            showCloseText: 'Закрыть',
-            enableStackAnimation: true,
-            onBlurContainer: '#container',
-            template: '<p></p>',
-            onLoad: function (elem){
-                $.get("/feedback", function(data){
-                    $(".avgrund-popin").html("<p>" + data + "</p> <a href='#' class='avgrund-close'>Закрыть</a>");
-                });
-            }
-        });
-        */
         $('#login').avgrund({
             height: 200,
             holderClass: 'custom',
@@ -286,6 +361,7 @@
             }
         });
     });
+    */
 </script>
 
 
@@ -329,9 +405,9 @@
 {% if user.id > 0 %}
     Имя пользователя: <a href="/user/{{ user.name }}">{{ user.name }}</a><br>
     Ид пользователя: {{ user.id }}<br>
-    <a href="/logout">Выйти</a><br>
+    <a href="/logout" id="logout">Выйти</a><br>
 {% else %}
-    <a href="/registration" id="registration">Зарегистрироваться</a> | <a href="#" id="login">Войти</a><br>
+    <a href="/registration" id="registration">Зарегистрироваться</a> | <a href="/login" id="login">Войти</a><br>
 {% endif %}
 
 <br><a href="/top">Популярные по просмотрам</a> | <a href="/last">Последние загруженные</a> | <a href="/feedback" id="feedback">Обратная связь</a>
