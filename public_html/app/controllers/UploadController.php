@@ -47,6 +47,7 @@ class UploadController extends ControllerBase
 
                 $folders = Helpers::create_folders();
                 $imgcode = $this->create_imgcode();
+                $editcode = Helpers::generatekey();
                 $ext = $this->getext();
                 $filename = $imgcode . "." . $ext;
 
@@ -85,7 +86,7 @@ class UploadController extends ControllerBase
                     "comments" => 0,
                     "private" => 0,
                     "up_type" => $type_num,
-                    "editcode" => Helpers::generatekey()
+                    "editcode" => $editcode
                 ));
 
                 if($img->album > 0)
@@ -114,6 +115,7 @@ class UploadController extends ControllerBase
             $this->echo_json(array(
                 "status" => "success",
                 "code" => $imgcode,
+                "editcode" => $editcode,
                 "c_path" => "/" . $folders["c"] . $filename,
                 "filesize" => filesize($pic_root . $folders["b"] . $filename),
                 "type" => array($type_num, $this->type)

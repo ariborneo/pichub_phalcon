@@ -6,11 +6,11 @@ class ImageController extends ControllerBase
     public function indexAction()
     {
         $code = $this->dispatcher->getParam("code");
-        $editcode = $this->dispatcher->getParam("editcode");
+        $editcode = $this->request->get("editcode");
         $img = Images::findFirst("code='".$code."'");
         if($img)
         {
-            $is_edit = $editcode == $img->editcode ? true : false;
+            $is_edit = $editcode == $img->editcode || ($this->user->id > 0 && $img->user == $this->user->id) ? true : false;
 
             $img->increase("views");
             $album = Albums::findFirst($img->album);
@@ -26,10 +26,9 @@ class ImageController extends ControllerBase
                 "me_like" => Likes::findFirst(array(
                         "image = ?0 and user = ?1",
                         "bind" => array($img->id, $this->user->id)
-                    )),
-                "is_edit" => $is_edit
+                ))
             )));
-
+            $this->view->setVar("is_edit", $is_edit);
             $comments = Comments::find(array(
                 "image=".$img->id,
                 "order" => "id DESC",
@@ -227,8 +226,10 @@ class ImageController extends ControllerBase
         if($this->request->isPost())
         {
             $code = $this->dispatcher->getParam("code");
+            $editcode = $this->request->get("editcode");
             $img = Images::findFirst("code='".$code."'");
-            if($img && $img->user == $this->user->id)
+            $is_edit = $editcode == $img->editcode || ($this->user->id > 0 && $img->user == $this->user->id) ? true : false;
+            if($is_edit)
             {
                 $filepath = Helpers::getdirbydate($img->time).$code.".".$img->ext;
                 $image = new Imgproc("../public/pic_b/".$filepath);
@@ -336,7 +337,7 @@ class ImageController extends ControllerBase
                 $image->alter_crop(100);
                 $image->save("../public/pic_c/".$filepath);
             }
-            $this->response->redirect("show/".$code);
+            $this->goBack();
         }
         else
         {

@@ -151,7 +151,11 @@ class LoginController extends ControllerBase
 
     public function forgotAction()
     {
-        $key = $this->dispatcher->getParam("key");
+        if($this->user->id >0)
+        {
+            $this->response->redirect();
+        }
+        $key = $this->request->get("key");
         if($key)
         {
             $forgotKey = ForgotKeys::findFirst("key='".$key."'");
@@ -213,6 +217,7 @@ class LoginController extends ControllerBase
                     )
                 );
             }
+            $this->view->pick("login/forgot_sended");
         }
     }
 

@@ -162,12 +162,12 @@
     {% endif %}
 {% endif %}
 
-{% if user.id != image["user"] %}
+{% if is_edit == false %}
     <br><a href="/del_request/{{ image["code"] }}" id="del_request">Запрос на удаление</a><br>
 {% endif %}
 
 
-{% if user.id == image["user"] %}
+{% if is_edit == true %}
     <br><br>
     <script>
         $(document).ready(function(){
@@ -178,9 +178,11 @@
             });
         });
     </script>
-    <input type="checkbox" id="pr" value="1" {% if image["private"] == 1 %}checked{% endif %}>Приватное
-    <br><br>
-    <form action="/edit/{{ image['code'] }}" method="post">
+    {% if user.id > 0 %}
+        <input type="checkbox" id="pr" value="1" {% if image["private"] == 1 %}checked{% endif %}>Приватное
+        <br><br>
+    {% endif %}
+    <form action="/edit/{{ image['code'] }}?editcode={{ image["editcode"] }}" method="post">
         Повернуть на
         <select name="rotate">
             <option value="0" selected>0&deg;</option>
@@ -334,8 +336,10 @@
     <textarea  onmouseover="this.select()" rows="2" cols="200" readonly>[url=http://{{ domain }}/show/{{ image["code"] }}][img]http://{{ domain }}/pic_b/{{ image["path"] }}[/img][/url]</textarea><br>
     HTML-код<br>
     <textarea onMouseOver="this.select()" rows="2" cols="200" readonly><a href="http://{{ domain }}/show/{{ image["code"] }}" target="_blank"><img src="http://{{ domain }}/pic_s/{{ image["path"] }}" border=0></a></textarea><br>
-    Ссылка на редактирование и удаление<br>
-    <textarea onMouseOver="this.select()" rows="2" cols="200" readonly style="border-color:red;">http://{{ domain }}/show/{{ image["code"] }}/{{ image["editcode"] }}</textarea>
+    {% if is_edit == true %}
+        Ссылка на редактирование и удаление<br>
+        <textarea onMouseOver="this.select()" rows="2" cols="200" readonly style="border-color:red;">http://{{ domain }}/show/{{ image["code"] }}/{{ image["editcode"] }}</textarea>
+    {% endif %}
 </div>
 
 

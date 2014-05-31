@@ -78,7 +78,7 @@ $(function(){
             {
                 data.context.find("span").css("right", "15px");
                 data.context.find("div canvas").replaceWith('<img src="'+obj.c_path+'" width="48px">');
-                data.context.find("p").css("width", "190px").css("left", "75px").html('<a href="/show/'+obj.code+'" target="_blank">'+obj.code+'</a><i>'+formatFileSize(obj.filesize)+'</i>');
+                data.context.find("p").css("width", "190px").css("left", "75px").html('<a href="/show/'+obj.code+'?editcode='+obj.editcode+'" target="_blank">'+obj.code+'</a><i>'+formatFileSize(obj.filesize)+'</i>');
             }
         }
 
