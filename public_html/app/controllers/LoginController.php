@@ -70,15 +70,10 @@ class LoginController extends ControllerBase
                 $name = $this->request->getPost("name");
                 $email = $this->request->getPost("email");
                 $password = $this->request->getPost("password");
-                $user = new Users();
-                $user->save(array(
+                $user = $this->user->create_user(array(
                     "name" => $name,
                     "email" => $email,
-                    "password" => Helpers::sha256($password),
-                    "time" => time(),
-                    "ban" => 0,
-                    "role" => 0,
-                    "active" => 1
+                    "password" => Helpers::sha256($password)
                 ));
                 $this->user->login_complete($user);
                 $this->goBack();
@@ -119,13 +114,8 @@ class LoginController extends ControllerBase
                 if($this->user->id == 0)
                 {
                     $name = "id" . $uid;
-                    $user = new Users();
-                    $user->save(array(
+                    $this->user->create_user(array(
                         "name" => $name,
-                        "time" => time(),
-                        "ban" => 0,
-                        "role" => 0,
-                        "active" => 1,
                         "vk_id" => $uid
                     ));
                     $this->goBack();

@@ -18,24 +18,17 @@ class ImageController extends ControllerBase
 
             $user = Users::findFirst(array("id = ".$img->user, "cache" => array("key" => "user_".$img->user)));
 
-            $this->view->setVar("image", array(
-                "code" => $code,
-                "user" => $img->user,
+            $this->view->setVar("image", array_merge($img->toArray(), array(
                 "username" => $user ? $user->name : 0,
                 "path" => Helpers::getdirbydate($img->time).$code.".".$img->ext,
-                "opis" => $img->opis,
                 "time" => Helpers::showdatetime($img->time),
-                "views" => $img->views,
                 "album" => $album,
-                "likes" => $img->likes,
                 "me_like" => Likes::findFirst(array(
                         "image = ?0 and user = ?1",
                         "bind" => array($img->id, $this->user->id)
-                )),
-                "comments" => $img->comments,
-                "editcode" => $img->editcode,
+                    )),
                 "is_edit" => $is_edit
-            ));
+            )));
 
             $comments = Comments::find(array(
                 "image=".$img->id,
@@ -226,6 +219,162 @@ class ImageController extends ControllerBase
                     ));
                 }
             }
+        }
+    }
+
+    public function editAction()
+    {
+        if($this->request->isPost())
+        {
+            $code = $this->dispatcher->getParam("code");
+            $img = Images::findFirst("code='".$code."'");
+            if($img && $img->user == $this->user->id)
+            {
+                $filepath = Helpers::getdirbydate($img->time).$code.".".$img->ext;
+                $image = new Imgproc("../public/pic_b/".$filepath);
+
+                if($this->request->getPost("rotate") > 0)
+                {
+                    $image->rotate($this->request->getPost("rotate"));
+                    $this->edit_log("rotate", $img->id);
+                }
+
+                $resize = $this->request->getPost("resize");
+                if(in_array($resize, array(1, 2, 3)))
+                {
+                    if($resize == 1)
+                    {
+                        $value = $this->request->getPost("resize_w");
+                    }
+                    elseif($resize == 2)
+                    {
+                        $value = $this->request->getPost("resize_h");
+                    }
+                    else
+                    {
+                        $value = $this->request->getPost("resize_p");
+                    }
+                    $image->alter_resize($resize, $value);
+                    $this->edit_log("resize", $img->id);
+                }
+
+                $title = iconv('windows-1251', 'utf-8', $this->request->getPost("title"));
+                $title_color = $this->request->getPost("title_color");
+                $title_size = $this->request->getPost("title_size");
+                if(strlen($title) > 0 && ctype_xdigit($title_color) && $title_size >= 8 && $title_size <= 72)
+                {
+                    $image->text($title, 10, $image->getHeight() * 0.97, null, $title_color, $title_size);
+                    $this->edit_log("text", $img->id);
+                }
+
+                $reflect = $this->request->getPost("reflect");
+                if($reflect == 1 || $reflect == 2)
+                {
+                    if($reflect == 1)
+                    {
+                        $direction = Phalcon\Image::HORIZONTAL;
+                    }
+                    else
+                    {
+                        $direction = Phalcon\Image::VERTICAL;
+                    }
+                    $image->flip($direction);
+                    $this->edit_log("flip", $img->id);
+                }
+
+                $filter = $this->request->getPost("filter");
+                if(in_array($filter, array("grey", "red", "green", "blue", "negate", "sepia")))
+                {
+                    $image->filter($filter);
+                    $this->edit_log("filter", $img->id);
+                }
+
+                $light_perc = $this->request->getPost("light");
+                if($light_perc > 0 && $light_perc <= 100)
+                {
+                    $image->filter("light", $light_perc);
+                    $this->edit_log("light", $img->id);
+                }
+
+                $contrast_perc = $this->request->getPost("contrast");
+                if($contrast_perc > 0 && $contrast_perc <= 100)
+                {
+                    $image->filter("contrast", $contrast_perc);
+                    $this->edit_log("contrast", $img->id);
+                }
+
+                $smooth_perc = $this->request->getPost("smooth");
+                if($smooth_perc > 0 && $smooth_perc <= 100)
+                {
+                    $image->filter("smooth", $smooth_perc);
+                    $this->edit_log("smooth", $img->id);
+                }
+
+                $corner_radius = $this->request->getPost("corner_radius");
+                if($corner_radius >= 3 && $corner_radius <= 100)
+                {
+                    $image->corner_radius($corner_radius);
+                    $this->edit_log("corner_radius", $img->id);
+                }
+
+                if($this->request->getPost("reflection_effect") == 1)
+                {
+                    $image->reflection(100);
+                    $this->edit_log("reflection", $img->id);
+                }
+
+                $blur = $this->request->getPost("blur");
+                if($blur > 0 && $blur <= 100)
+                {
+                    $image->blur($blur);
+                    $this->edit_log("blur", $img->id);
+                }
+
+                $image->save("../public/pic_b/".$filepath);
+                $image->resize(200);
+                $image->save("../public/pic_s/".$filepath);
+                $image->alter_crop(100);
+                $image->save("../public/pic_c/".$filepath);
+            }
+            $this->response->redirect("show/".$code);
+        }
+        else
+        {
+            $this->response->redirect();
+        }
+    }
+
+    protected function edit_log($action, $image)
+    {
+        $l = new ImagesEditLog();
+        $l->create(array(
+            "action" => $action,
+            "image" => $image,
+            "time" => time()
+        ));
+    }
+
+    public function change_privateAction()
+    {
+        $code = $this->dispatcher->getParam("code");
+        $image = Images::findFirst("code='".$code."'");
+        if($image && $image->user == $this->user->id)
+        {
+            $image->private = $image->private == 1 ? 0 : 1;
+            $image->update();
+            if(!$this->request->isAjax())
+            {
+                $this->goBack();
+            }
+            $this->echo_json(array(
+                "status" => "success",
+                "action" => $this->dispatcher->getActionName(),
+                "private" => (int) $image->private
+            ));
+        }
+        else
+        {
+            $this->goBack();
         }
     }
 

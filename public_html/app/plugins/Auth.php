@@ -105,4 +105,18 @@ class Auth extends Users
         $this->cookies->delete("user_hash");
     }
 
+    public function create_user($params)
+    {
+        $user = new Users();
+        $user->assign(array(
+            "time" => time(),
+            "ban" => 0,
+            "role" => 0,
+            "active" => 1
+        ));
+        $user->assign($params);
+        $user->create();
+        return $user;
+    }
+
 }

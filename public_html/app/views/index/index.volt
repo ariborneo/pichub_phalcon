@@ -108,7 +108,6 @@
 </script>
 
 
-
 <input id="buttonStart" type="button" class="button" value="Камера" />
 <div class="stuff" id="stuff">
     <input id="button" type="button" class="button" value="Кадр" />
@@ -119,51 +118,13 @@
 </div>
 
 
-
-
-
-
 <br><br><br>
 
 
-
-
-
-
-<link rel="stylesheet" type="text/css" href="/css/flipcard/flipcard.css"/>
-<script src="/js/flipcard/flipcard.js"></script>
 <script>
-    function flip()
-    {
-        $(".card-container").flip();
-    }
-</script>
 
-
-
-
-
-
-
-<form action="/upload" method="post" id="upload_url" style="margin-bottom: 50px;">
-    <input name="urls[]" type="text"><br/>
-    <input name="urls[]" type="text"><br/>
-    <input name="urls[]" type="text"><br/>
-    <input name="urls[]" type="text"><br/>
-    <input name="urls[]" type="text"><br/>
-    <input name="urls[]" type="text"><br/>
-    <input name="urls[]" type="text"><br/>
-    <input name="urls[]" type="text"><br/>
-    <input name="urls[]" type="text"><br/>
-    <input name="urls[]" type="text"><br/>
-    <input type="submit" value="Upload">
-</form>
-
-<script>
-    $(function()
-    {
-        $("#upload_url").submit(function()
-        {
+    $(document).ready(function(){
+        $("#upload_url").submit(function(){
             var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
             var urls = $(this).find("input[type='text']");
             $.each(urls, function(key, value){
@@ -178,63 +139,51 @@
             });
             return false;
         });
-    });
-</script>
-
-
-
-
-
-
-
-
-
-<!--
-<link href='http://fonts.googleapis.com/css?family=Headland+One|Open+Sans:400,300&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
-<link rel="stylesheet" href="/css/avgrund/reset.css">
-<link rel="stylesheet" href="/css/avgrund/style.css">
-<link rel="stylesheet" href="/css/avgrund/avgrund.css">
-<script src="/js/avgrund/jquery.avgrund.js"></script>
--->
-
-
-<script>
-
-    $(document).ready(function(){
-        $('#feedback').click(function(){
-            var feedback_send = function(){
+        $("#login, #registration, #feedback").click(function(){
+            var link = $(this);
+            var id = link.attr("id");
+            var form = $("#modal_forms").children("#modal_"+id);
+            form.children("form").children("input[type='submit'], br").remove();
+            var send = function(){
                 var fallr = $(this);
                 $.post(fallr.children('form').attr('action'), fallr.children('form').serialize(), function(data){
                     console.log(data);
                     var obj = JSON.parse(data);
                     if(obj["status"] == "success")
                     {
-                        fallr.next().html('');
-                        fallr.html('<h4>Сообщение отправлено</h4>');
-                        setTimeout(function(){ $.fallr('hide') }, 2000);
+                        if(id == "feedback")
+                        {
+                            fallr.next().html('');
+                            fallr.html('<h4>Сообщение отправлено</h4>');
+                            setTimeout(function(){ $.fallr('hide') }, 2000);
+                        }
+                        else
+                        {
+                            window.location.reload();
+                        }
                     }
                     else if(obj["status"] == "error")
                     {
                         $.fallr('shake');
                     }
                 });
-            }
+            };
+            var get_icon = function(){
+                switch (id){
+                    case "feedback":
+                        icon = "mail"; break;
+                    default:
+                        icon = "check";
+                }
+                return icon;
+            };
             $.fallr('show', {
-                icon        : 'mail',
-                width       : '600px',
+                icon        : get_icon(),
+                width       : '500px',
                 position    : "center",
-                content     : '<h4>Обратная связь</h4>'
-                        + '<form action="/feedback" method="post">'
-                        + '<table style="border: 0;">'
-                        + '<tr><td width="100px"><b>Имя:</b></td><td><input type="text" name="name"></td></tr>'
-                        + '<tr><td><b>Email:</b></td><td><input type="text" name="email" title="Указывайте верный email, т.к. на него придет ответ"></td></tr>'
-                        + '<tr><td><b>Тема:</b></td><td><input type="text" name="subject"></td><td id="theme_result"></td></tr>'
-                        + '<tr><td><b>Сообщение:</b></td><td><textarea name="text" rows="5"></textarea></td></tr>'
-                        + '<tr><td><b>Капча:</b></td><td><img src="/captcha" id="captcha"> <input type="text" name="captcha"></td></tr>'
-                        + '</table>'
-                        + '</form>',
+                content     : form.html(),
                 buttons : {
-                    button1 : {text: 'Отправить', onclick: feedback_send},
+                    button1 : {text: 'Отправить', onclick: send},
                     button2 : {text: 'Отмена'}
                 }
             });
@@ -254,114 +203,7 @@
             });
             return false;
         });
-        $("#login").click(function(){
-            var link = $(this);
-            var login = function(){
-                var fallr = $(this);
-                $.post(fallr.children('form').attr('action'), fallr.children('form').serialize(), function(data){
-                    console.log(data);
-                    var obj = JSON.parse(data);
-                    if(obj["status"] == "success")
-                    {
-                        window.location.reload();
-                    }
-                    else if(obj["status"] == "error")
-                    {
-                        $.fallr('shake');
-                    }
-                });
-            };
-            $.fallr('show', {
-                width       : '500px',
-                position    : "center",
-                buttons : {
-                    button1 : {text: 'Да', danger: true, onclick: login},
-                    button2 : {text: 'Отмена'}
-                },
-                content : '<h4>Авторизация</h4>'
-                        + '<form action="' + link.attr("href") + '" method="post">'
-                        + '<table style="border: 0;">'
-                        + '<tr><td width="100px"><b>Логин:</b></td><td><input type="text" name="name"></td></tr>'
-                        + '<tr><td><b>Пароль:</b></td><td><input type="password" name="password"></td></tr>'
-                        + '</table>'
-                        + '</form>'
-                        + '<hr><a href="#" onclick="vk_login()">VK</a>',
-                icon    : 'error'
-            });
-            return false;
-        });
-        $("#registration").click(function(){
-            var link = $(this);
-            var login = function(){
-                var fallr = $(this);
-                $.post(fallr.children('form').attr('action'), fallr.children('form').serialize(), function(data){
-                    console.log(data);
-                    var obj = JSON.parse(data);
-                    if(obj["status"] == "success")
-                    {
-                        window.location.reload();
-                    }
-                    else if(obj["status"] == "error")
-                    {
-                        $.fallr('shake');
-                    }
-                });
-            };
-            $.fallr('show', {
-                width       : '500px',
-                position    : "center",
-                buttons : {
-                    button1 : {text: 'Да', danger: true, onclick: login},
-                    button2 : {text: 'Отмена'}
-                },
-                content : '<h4>Регистрация</h4>'
-                        + '<form action="' + link.attr("href") + '" method="post">'
-                        + '<table style="border: 0;">'
-                        + '<tr><td width="100px"><b>Логин:</b></td><td><input type="text" name="name"></td></tr>'
-                        + '<tr><td><b>Email:</b></td><td><input type="text" name="email"></td></tr>'
-                        + '<tr><td><b>Пароль:</b></td><td><input type="password" name="password"></td></tr>'
-                        + '<tr><td><b>Капча:</b></td><td><img src="/captcha" id="captcha"> <input type="text" name="captcha"></td></tr>'
-                        + '</table>'
-                        + '</form>'
-                        + '<hr><a href="#" onclick="vk_login()">VK</a>',
-                icon    : 'error'
-            });
-            return false;
-        });
     });
-
-    /*
-    $(function() {
-        $('#login').avgrund({
-            height: 200,
-            holderClass: 'custom',
-            showClose: true,
-            showCloseText: 'Закрыть',
-            enableStackAnimation: true,
-            onBlurContainer: '#container',
-            template: '<p></p>',
-            onLoad: function (elem){
-                $.get("/login", function(data){
-                    $(".avgrund-popin").html("<p>" + data + "</p> <a href='#' class='avgrund-close'>Закрыть</a>");
-                });
-            }
-        });
-        $('#registration').avgrund({
-            height: 200,
-            holderClass: 'custom',
-            showClose: true,
-            showCloseText: 'Закрыть',
-            enableStackAnimation: true,
-            onBlurContainer: '#container',
-            template: '<p></p>',
-            onLoad: function (elem){
-                $.get("/registration", function(data){
-                    $(".avgrund-popin").html("<p>" + data + "</p> <a href='#' class='avgrund-close'>Закрыть</a>");
-                });
-            }
-        });
-    });
-    */
 </script>
 
 
@@ -369,7 +211,14 @@
 
 
 
-
+<link rel="stylesheet" type="text/css" href="/css/flipcard/flipcard.css"/>
+<script src="/js/flipcard/flipcard.js"></script>
+<script>
+    function flip()
+    {
+        $(".card-container").flip();
+    }
+</script>
 <input type="button" value="flip" onclick="flip()">
 
 <div class="card-container" style="width: 320px; height:300px; margin:200px auto 100px; padding: 10px; left:5px; top:5px;">
@@ -383,23 +232,38 @@
                 </div>
                 <ul></ul>
             </form>
-
         </div>
         <div class="back">
-            <img src="http://pichub.local/pic_c/14/05/11/fd8754e688dfd9f72b43bca2b31f18f8.jpg" width="310px" height="284px">
+            <form action="/upload" method="post" id="upload_url">
+                <input name="urls[]" type="text"><br/>
+                <input name="urls[]" type="text"><br/>
+                <input name="urls[]" type="text"><br/>
+                <input name="urls[]" type="text"><br/>
+                <input name="urls[]" type="text"><br/>
+                <input name="urls[]" type="text"><br/>
+                <input name="urls[]" type="text"><br/>
+                <input name="urls[]" type="text"><br/>
+                <input name="urls[]" type="text"><br/>
+                <input name="urls[]" type="text"><br/>
+                <input type="submit" value="Upload">
+            </form>
         </div>
     </div>
 </div>
 
 
-<script src="/js/jquery.knob.js"></script>
-<script src="/js/jquery.ui.widget.js"></script>
-<script src="/js/jquery.iframe-transport.js"></script>
-<script src="/js/jquery.fileupload.js"></script>
-<script src="/js/fileupload.js"></script>
+<div id="modal_forms" style="display: none;">
+    <div id="modal_login">{% include "login/login.volt" %}</div>
+    <div id="modal_registration">{% include "login/registration.volt" %}</div>
+    <div id="modal_feedback">{% include "index/feedback.volt" %}</div>
+</div>
 
 
-
+<script src="/js/fileupload/jquery.knob.js"></script>
+<script src="/js/fileupload/jquery.ui.widget.js"></script>
+<script src="/js/fileupload/jquery.iframe-transport.js"></script>
+<script src="/js/fileupload/jquery.fileupload.js"></script>
+<script src="/js/fileupload/fileupload.js"></script>
 
 
 {% if user.id > 0 %}
