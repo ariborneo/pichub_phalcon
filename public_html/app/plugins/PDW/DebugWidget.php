@@ -17,6 +17,7 @@ class DebugWidget implements \Phalcon\DI\InjectionAwareInterface
 	protected $_profiler;
 	protected $_viewsRendered = array();
     protected $_serviceNames = array();
+    protected $_includedFiles = array();
 
 	public function __construct(
 		$di,
@@ -113,6 +114,8 @@ class DebugWidget implements \Phalcon\DI\InjectionAwareInterface
 			'controller'=>$view->getControllerName(),
 			'action'=>$view->getActionName(),
 		);
+
+        $this->_includedFiles = get_included_files();
 	}
 
 
@@ -199,4 +202,10 @@ class DebugWidget implements \Phalcon\DI\InjectionAwareInterface
 	{
 		return $this->_profiler;
 	}
+
+    public function getIncludedFiles()
+    {
+        return $this->_includedFiles;
+    }
+
 }

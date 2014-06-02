@@ -19,13 +19,13 @@ return new \Phalcon\Config(array(
     ),
     "mail" => array(
         "fromName" => "PicHub.ru",
-        "fromEmail" => "pichub@yandex.ru",
+        "fromEmail" => "noreply@pichub.ru",
         "smtp" => array(
             "server" => "smtp.yandex.ru",
             "port" => "465",
             "security" => "ssl",
-            "username" => "pichub@yandex.ru",
-            "password" => "19955875aa",
+            "username" => "noreply@pichub.ru",
+            "password" => "19955875"
         )
     )
 ));

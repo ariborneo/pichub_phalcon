@@ -1,8 +1,3 @@
-<?php
-$files = array(
-    "/app/plugins/Auth.php"
-);
-?>
 <div id='pdw-panel-files' class='pdw-panel files'>
     <div class='title'>
         <h2>Included Files <a class='pdw-panel-close'>&times;</a></h2>
@@ -18,7 +13,7 @@ $files = array(
             <tbody>
             <?php
             $count = 0;
-            foreach ($files as $file):
+            foreach ($debugWidget->getIncludedFiles() as $file):
                 ++$count;
                 echo "<tr>";
                 echo "<td>" . $count . "</td>";

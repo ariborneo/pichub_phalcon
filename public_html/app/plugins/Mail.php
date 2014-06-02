@@ -32,7 +32,8 @@ class Mail extends Component
                 $mailSettings->fromEmail => $mailSettings->fromName
             ))
             ->setBody($template, 'text/html');
-        if (!$this->_transport) {
+        if (!$this->_transport)
+        {
             $this->_transport = Swift_SmtpTransport::newInstance(
                 $mailSettings->smtp->server,
                 $mailSettings->smtp->port,
