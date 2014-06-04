@@ -18,7 +18,6 @@ class Mail extends Component
         return $this->view->getRender('emailTemplates', $name, $parameters, function($view){
             $view->setRenderLevel(View::LEVEL_LAYOUT);
         });
-        return $view->getContent();
     }
 
     public function send($to, $subject, $name, $params)

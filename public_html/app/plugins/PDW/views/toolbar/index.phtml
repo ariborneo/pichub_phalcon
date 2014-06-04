@@ -31,9 +31,14 @@
                     <small><?php echo count($debugWidget->getIncludedFiles()) ?> files</small>
                 </a>
             </li>
+            <li>
+                <a href='#router'>
+                    Router
+                </a>
+            </li>
 		</ul>
 		<?php
-			$panels = array('server', 'request', 'views', 'db', 'files');
+			$panels = array('server', 'request', 'views', 'db', 'files', 'router');
 			foreach ($panels as $panel) {
 				$this->partial("panels/{$panel}");
 			}

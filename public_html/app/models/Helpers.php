@@ -3,7 +3,8 @@
 class Helpers
 {
 
-    static function check_file_type($type){
+    static function check_file_type($type)
+    {
         return in_array($type, array(
             "image/jpeg",
             "image/png",
@@ -11,18 +12,22 @@ class Helpers
         ));
     }
 
-    static function create_folder($type){
+    static function create_folder($type)
+    {
         $public_root = "../public/";
         $y = date("y");
         $m = date("m");
         $d = date("d");
-        if(!is_dir($public_root."pic_".$type."/".$y)){
+        if(!is_dir($public_root."pic_".$type."/".$y))
+        {
             mkdir($public_root."pic_".$type."/".$y, 0770);
         }
-        if(!is_dir($public_root."pic_".$type."/".$y."/".$m)){
+        if(!is_dir($public_root."pic_".$type."/".$y."/".$m))
+        {
             mkdir($public_root."pic_".$type."/".$y."/".$m, 0770);
         }
-        if(!is_dir($public_root."pic_".$type."/".$y."/".$m."/".$d)){
+        if(!is_dir($public_root."pic_".$type."/".$y."/".$m."/".$d))
+        {
             mkdir($public_root."pic_".$type."/".$y."/".$m."/".$d, 0770);
         }
         return "pic_".$type."/".$y."/".$m."/".$d."/";
@@ -37,8 +42,9 @@ class Helpers
         );
     }
 
-    static function generatekey(){
-        return md5(uniqid(rand(),true));
+    static function generatekey()
+    {
+        return md5(uniqid(rand(), true));
     }
 
     static function generateString($length)
@@ -53,36 +59,51 @@ class Helpers
         return $str;
     }
 
-    static function getext($filename){
+    static function getext($filename)
+    {
         return substr(strrchr($filename, '.'), 1);
     }
 
-    static function getdirbydate($date){
-        $date = date('Y-m-d H:i:s', $date);
-        list($date) = preg_split("/ /", substr($date, 2), 5);
-        $date = str_replace("-","/", $date);
-        return $date.'/';
+    static function getdirbydate($date)
+    {
+        return date("y/m/d", $date) . "/";
     }
 
-    static function showdatetime($datetime){
-        $datetime = date('Y-m-d H:i:s',$datetime);
-        $month = array("января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря");
-        list($date,$time) = explode(" ",$datetime);
-        list($y,$m,$d) = explode("-",$date);
-        $cur_y = date("Y");
-        $cur_m = date("m");
-        $cur_d = date("d");
-        if($cur_y==$y && $cur_m==$m && $cur_d==$d){
-            $date = 'Сегодня';
-        }elseif(($cur_y==$y && $cur_m==$m && $cur_d-1==$d) || ( $cur_y==$y && $cur_m-1==$m && ($d==30 || $d==31) && $cur_d==1 ) || ( $cur_y-1==$y && $cur_m==12 && ($d==30 || $d==31) && $cur_d==1 ) ){
-            $date = 'Вчера';
-        }else{
-            if(substr($d,0,1)=='0'){$d = substr($d,1);}
-            $date = $d.' '.$month[$m-1];
-            if($y<$cur_y){ $date .= ' '.$y; }
+    static function showdatetime($datetime)
+    {
+        $month = array("января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря");
+        list($date, $time) = explode(" ", date("Y-m-d H:i:s", $datetime));
+        list($y, $m, $d) = explode("-", $date);
+        $reldays = (mktime(0, 0, 0, $m, $d, $y) - mktime(0, 0, 0)) / 86400;
+        if($reldays == 0)
+        {
+            $date = "Сегодня";
         }
-        if(substr($time,0,1)=='0'){$time = substr($time,1);}
-        return $date.' в '.substr($time,0,-3);
+        elseif($reldays == -1)
+        {
+            $date = "Вчера";
+        }
+        elseif($reldays == 1)
+        {
+            $date = "Завтра";
+        }
+        else
+        {
+            if(substr($d, 0, 1) == "0")
+            {
+                $d = substr($d, 1);
+            }
+            $date = $d." ".$month[$m-1];
+            if($y < date("Y"))
+            {
+                $date .= " " . $y;
+            }
+        }
+        if(substr($time, 0, 1) == "0")
+        {
+            $time = substr($time, 1);
+        }
+        return $date . " в " . substr($time, 0, -3);
     }
 
     static function sha256($text)

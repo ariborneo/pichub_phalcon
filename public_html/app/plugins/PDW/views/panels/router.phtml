@@ -1,0 +1,39 @@
+<div id='pdw-panel-router' class='pdw-panel router'>
+    <div class='title'>
+        <h2>Routes <a class='pdw-panel-close'>&times;</a></h2>
+    </div>
+    <div class='panel-content'>
+        <table class='pdw-data-table'>
+            <thead>
+            <tr>
+                <th style="width: 50px">#</th>
+                <th>Name</th>
+                <th>Controller</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php
+            $count = 0;
+            foreach ($this->router->getRoutes() as $route):
+                ++$count;
+                $paths = $route->getPaths();
+                if($this->router->getControllerName() == $paths["controller"] && $this->router->getActionName() == $paths["action"])
+                {
+                    echo "<tr style='font-weight: bold;'>";
+                }
+                else
+                {
+                    echo "<tr>";
+                }
+                echo "<td>" . $count . "</td>";
+                echo "<td>" . $route->getPattern() . "</td>";
+                echo "<td>" . $paths["controller"] . "</td>";
+                echo "<td>" . $paths["action"] . "</td>";
+                echo "</tr>";
+            endforeach;
+            ?>
+            </tbody>
+        </table>
+    </div>
+</div>
